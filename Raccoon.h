@@ -9,51 +9,51 @@
 #endif
 
 
-#define	DSP_ANA0	        0x00	//	模拟控制寄存器0
-#define	DSP_ANA1	        0X01	//	模拟控制寄存器1
-#define	DSP_CTRL0	        0X02	//	数字控制寄存器0
-#define	DSP_CTRL1	        0x03	//	数字控制寄存器1
-#define	DSP_CTRL2	        0x04	//	数字控制寄存器2
-#define	DSP_CTRL3	        0x05	//	数字控制寄存器3
-#define	DSP_CTRL4	        0x06	//	数字控制寄存器4
-#define	DSP_CTRL5	        0x07	//	数字控制寄存器5
-#define	DSP_DAT_PA	        0x08	//	A通道瞬时有功功率
-#define	DSP_DAT_QA	        0x09	//	A通道瞬时无功功率
-#define	DSP_DAT_SA	        0x0a	//	A通道瞬时视在功率
-#define	DSP_DAT_PB	        0x0b	//	B通道瞬时有功功率
-#define	DSP_DAT_QB	        0x0c	//	B通道瞬时无功功率
-#define	DSP_DAT_SB	        0x0d	//	B通道瞬时视在功率
-#define	DSP_DAT_RMS0UA	        0x0e	//	电压瞬时有效值
-#define	DSP_DAT_RMS0IA	        0x0f	//	电流A瞬时有效值
-#define	DSP_DAT_RMS0IB	        0x10	//	电流B瞬时有效值
-#define	DSP_DAT_CH1	        0x11	//	基波可选通道1瞬时值
-#define	DSP_DAT_CH2	        0x12	//	基波可选通道2瞬时值
-#define	DSP_DAT_PA1	        0x13	//	A通道平均有功功率
-#define	DSP_DAT_QA1	        0x14	//	A通道平均无功功率
-#define	DSP_DAT_SA1	        0x15	//	A通道平均视在功率
-#define	DSP_DAT_PB1	        0x16	//	B通道平均有功功率
-#define	DSP_DAT_QB1	        0x17	//	B通道平均无功功率
-#define	DSP_DAT_SB1	        0x18	//	B通道平均视在功率
-#define	DSP_DAT_RMS1UA	        0x19	//	电压平均有效值
-#define	DSP_DAT_RMS1IA	        0x1a	//	电流A平均有效值
-#define	DSP_DAT_RMS1IB	        0x1b	//	电流B平均有效值
-#define	DSP_DAT_CH1_AVG	        0x1c	//	基波可选通道1平均值
-#define	DSP_DAT_CH2_AVG	        0x1d	//	基波可选通道2平均值
-#define	DSP_DAT_RMSU_AVG	0x1e	//	10或12个周波（通过电网频率选择）的电压有效值平均值
-#define	DSP_DAT_RMSIA_AVG	0x1f	//	10或12个周波（通过电网频率选择）的电流IA有效值平均值
-#define	DSP_DAT_RMSIB_AVG	0x20	//	10或12个周波（通过电网频率选择）的电流IB有效值平均值
-#define	DSP_DAT_FRQ	        0x21	//	电网频率
-#define	DSP_DAT_DCU	        0x22	//	电压通道直流值
-#define	DSP_DAT_DCI	        0x23	//	电流A通道直流值
-#define	DSP_DAT_DCIB	        0x24	//	电流B通道直流值
-#define	DSP_CFG_CALI_PA	        0x25	//	有功功率A比差校正
-#define	DSP_CFG_DC_PA	        0x26	//	有功功率A小信号校正
-#define	DSP_CFG_CALI_QA	        0x27	//	无功功率A比差校正
-#define	DSP_CFG_DC_QA	        0x28	//	无功功率A小信号校正
-#define	DSP_CFG_CALI_PB	        0x29	//	有功功率B比差校正
-#define	DSP_CFG_DC_PB	        0x2a	//	有功功率B小信号校正
-#define	DSP_CFG_CALI_QB	        0x2b	//	无功功率B比差校正
-#define	DSP_CFG_DC_QB	        0x2c	//	无功功率B小信号校正
+#define	DSP_ANA0	        0x00	//Analog control register	0
+#define	DSP_ANA1	        0X01	//Analog control register	1
+#define	DSP_CTRL0	        0X02	//Digital control register	0
+#define	DSP_CTRL1	        0x03	//Digital control register	1
+#define	DSP_CTRL2	        0x04	//Digital control register2
+#define	DSP_CTRL3	        0x05	//Digital control register3
+#define	DSP_CTRL4	        0x06	//Digital control register4
+#define	DSP_CTRL5	        0x07	//Digital control register5
+#define	DSP_DAT_PA	        0x08	//A Channel instantaneous active power	
+#define	DSP_DAT_QA	        0x09	//A Channel instantaneous reactive power	
+#define	DSP_DAT_SA	        0x0a	//A Channel instantaneous apparent power	
+#define	DSP_DAT_PB	        0x0b	//B Channel instantaneous active power
+#define	DSP_DAT_QB	        0x0c	//B Channel instantaneous reactive power	
+#define	DSP_DAT_SB	        0x0d	//B Channel instantaneous reactive power
+#define	DSP_DAT_RMS0UA	        0x0e	//Voltage instantaneous effective value
+#define	DSP_DAT_RMS0IA	        0x0f	//Current A instantaneous effective value
+#define	DSP_DAT_RMS0IB	        0x10	//Current A instantaneous effective value
+#define	DSP_DAT_CH1	        0x11	//	Fundamental optional channel 1 instantaneous value
+#define	DSP_DAT_CH2	        0x12	//	Fundamental optional channel 2 instantaneous value
+#define	DSP_DAT_PA1	        0x13	//	A Channel average active power
+#define	DSP_DAT_QA1	        0x14	//	A Channel average reactive power
+#define	DSP_DAT_SA1	        0x15	//	A Channel average apparent power
+#define	DSP_DAT_PB1	        0x16	//	B Channel average active power
+#define	DSP_DAT_QB1	        0x17	//	B Channel average reactive power
+#define	DSP_DAT_SB1	        0x18	//	B Channel average apparent power
+#define	DSP_DAT_RMS1UA	        0x19	//	Voltage average effective value
+#define	DSP_DAT_RMS1IA	        0x1a	//  Average effective value of current A	
+#define	DSP_DAT_RMS1IB	        0x1b	//	Current B average effective value
+#define	DSP_DAT_CH1_AVG	        0x1c	//	Fundamental optional channel 1 average
+#define	DSP_DAT_CH2_AVG	        0x1d	//	Fundamental optional channel 2 average
+#define	DSP_DAT_RMSU_AVG	0x1e	//	Average voltage rms value over 10 or 12 cycles (selected by grid frequency)
+#define	DSP_DAT_RMSIA_AVG	0x1f	//	Average RMS value of current IA over 10 or 12 cycles (selected by grid frequency)
+#define	DSP_DAT_RMSIB_AVG	0x20	//	Average current IB rms value for 10 or 12 cycles (selected by grid frequency)
+#define	DSP_DAT_FRQ	        0x21	//	Grid frequency
+#define	DSP_DAT_DCU	        0x22	//	Voltage channel DC value
+#define	DSP_DAT_DCI	        0x23	//	Current A channel DC value
+#define	DSP_DAT_DCIB	        0x24	//	Current B channel DC value
+#define	DSP_CFG_CALI_PA	        0x25	// Active power A ratio difference correction
+#define	DSP_CFG_DC_PA	        0x26	//  Active power A small signal correction	
+#define	DSP_CFG_CALI_QA	        0x27	//	Reactive power A ratio difference correction
+#define	DSP_CFG_DC_QA	        0x28	//	Reactive power A small signal correction      
+#define	DSP_CFG_CALI_PB	        0x29	//	Active power B ratio difference correction
+#define	DSP_CFG_DC_PB	        0x2a	//	Active power B small signal correction
+#define	DSP_CFG_CALI_QB	        0x2b	//	Reactive power B ratio difference correction
+#define	DSP_CFG_DC_QB	        0x2c	//	Reactive power B small signal correction 
 #define	DSP_CFG_CALI_RMSUA	0x2d	//	电压有效值比差校正
 #define	DSP_CFG_RMS_DCUA	0x2e	//	电压有效值小信号校正
 #define	DSP_CFG_CALI_RMSIA	0x2f	//	电流A有效值比差校正
