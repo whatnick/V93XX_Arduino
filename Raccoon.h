@@ -54,89 +54,96 @@
 #define	DSP_CFG_DC_PB	        0x2a	//	Active power B small signal correction
 #define	DSP_CFG_CALI_QB	        0x2b	//	Reactive power B ratio difference correction
 #define	DSP_CFG_DC_QB	        0x2c	//	Reactive power B small signal correction 
-#define	DSP_CFG_CALI_RMSUA	0x2d	//	电压有效值比差校正
-#define	DSP_CFG_RMS_DCUA	0x2e	//	电压有效值小信号校正
-#define	DSP_CFG_CALI_RMSIA	0x2f	//	电流A有效值比差校正
-#define	DSP_CFG_RMS_DCIA	0x30	//	电流A有效值小信号校正
-#define	DSP_CFG_CALI_RMSIB	0x31	//	电流B有效值比差校正
-#define	DSP_CFG_RMS_DCIB	0x32	//	电流B有效值小信号校正
-#define	DSP_CFG_PHC	        0x33	//	角差校正寄存器。
-#define	DSP_CFG_DCUA	        0x34	//	电压通道直流校正值
-#define	DSP_CFG_DCIA	        0x35	//	电流A通道直流校正值
-#define	DSP_CFG_DCIB	        0x36	//	电流B通道直流校正值
-#define	DSP_CFG_BPF	        0x37	//	带通滤波器系数。
-#define	DSP_CFG_CKSUM	        0x38	//	校验和配置寄存器
-#define	EGY_PROCTH	        0x39	//	能量桶防潜阈值（小于他不累加）
-#define	EGY_PWRTH	        0x3a	//	能量桶累加阈值。由于能量桶为46bit，实际高速能量桶累加阈值为该阈值*16384；低速能量桶累加阈值为该值*4。
-#define	EGY_CONST1	        0x3b	//	能量桶1累加常数
-#define	EGY_OUT1L	        0x3c	//	能量桶1累加值低位
-#define	EGY_OUT1H	        0x3d	//	能量桶1累加值高位。
-#define	EGY_CFCNT1	        0x3e	//	能量桶1脉冲计数器。
-#define	EGY_CONST2	        0x3f	//	能量桶2累加常数。
-#define	EGY_OUT2L	        0x40	//	能量桶2累加值低位。
-#define	EGY_OUT2H	        0x41	//	能量桶2累加值高位。
-#define	EGY_CFCNT2	        0x42	//	能量桶2脉冲计数器。
-#define	EGY_CONST3	        0x43	//	能量桶3累加常数。
-#define	EGY_OUT3	        0x44	//	能量桶3累加值
-#define	EGY_CFCNT3	        0x45	//	能量桶3脉冲计数器
-#define	EGY_CONST4	        0x46	//	能量桶4累加常数
-#define	EGY_OUT4	        0x47	//	能量桶4累加值
-#define	EGY_CFCNT4	        0x48	//	能量桶4脉冲计数器
-#define	EGY_CONST5	        0x49	//	能量桶5累加常数
-#define	EGY_OUT5	        0x4a	//	能量桶5累加值
-#define	EGY_CFCNT5	        0x4b	//	能量桶5脉冲计数器
-#define	EGY_CONST6	        0x4c	//	能量桶6累加常数
-#define	EGY_OUT6	        0x4d	//	能量桶6累加值
-#define	EGY_CFCNT6	        0x4e	//	能量桶6脉冲计数器
-#define	EGY_CONST7	        0x4f	//	能量桶7累加常数
-#define	EGY_OUT7	        0x50	//	能量桶7累加值
-#define	EGY_CFCNT7	        0x51	//	能量桶7脉冲计数器
-#define	EGY_CONST8	        0x52	//	能量桶8累加常数
-#define	EGY_OUT8	        0x53	//	能量桶8累加值
-#define	EGY_CFCNT8	        0x54	//	能量桶8脉冲计数器
-#define	DSP_OV_THL	        0x55	//	潜动判断上限阈值
-#define	DSP_OV_THH	        0x56	//	潜动判断下限阈值
-#define	DSP_SWELL_THL	        0x57	//	电压骤升下限阈值。电流检测模式时，用来判断电流有效值。
-#define	DSP_SWELL_THH	        0x58	//	电压骤升上限阈值。电流检测模式时，用来判断电流有效值。
-#define	DSP_DIP_THL	        0x59	//	电压骤降下限阈值
-#define	DSP_DIP_THH	        0x5a	//	电压骤降上限阈值
-#define	FD_OVTH	                0x5b	//	快速检测过压阈值。
-#define	FD_LVTH	                0x5c	//	快速检测欠压阈值。
-#define	FD_IA_OCTH	        0x5d	//	快速检测电流A通道过流阈值。
-#define	FD_IA_LCTH	        0x5e	//	快速检测电流A通道欠流阈值。
-#define	FD_IB_OCTH	        0x5f	//	快速检测电流B通道过流阈值。
-#define	FD_IB_LCTH	        0x60	//	快速检测电流B通道欠流阈值。
-#define	DSP_PHS_STT	        0x61	//	相位测量控制位，写操作使能一次相位测量。
-#define	DSP_PHS_U	        0x62	//	电压相位值
-#define	DSP_PHS_UN	        0x63	//	电压过零点之前波形数据值
-#define	DSP_PHS_UP	        0x64	//	电压过零点之后波形数据值
-#define	DSP_PHS_I	        0x65	//	电流相位值
-#define	DSP_PHS_IN	        0x66	//	电流过零点之前波形数据值
-#define	DSP_PHS_IP	        0x67	//	电流过零点之后波形数据值
-#define	TEMPERATE	        0x68	//	温度寄存器
-#define	DAT_WAVE	        0x69	//	波形数据读取，可重复读取该地址，从而获得完整波形数据。若不需要读完全部数据，可通过DSP_CTRL5位31复位读取地址。
-#define	DAT_SWELL_CNT	        0x6a	//	电压骤升时间记录，半波为单位。24bit有效。向该地址写任意值，可清零该计数值。
-#define	DAT_DIP_CNT	        0x6b	//	电压骤降时间记录，半波为单位。24bit有效。向该地址写任意值，可清零该计数值。
-#define	SYS_SFTRST	        0x6C	//	软件复位寄存器。
-#define	SYS_FPGACW0	        0x6D	//	FPGA信号源控制位0
-#define	SYS_FPGACW1	        0x6E	//	FPGA 信号源控制位1
-#define	SYS_FPGACW2	        0x6F	//	FPGA 信号源控制位2
-#define	SYS_BAUDCNT1	        0x70	//	UART接收数据 1 位计数值。
-#define	SYS_BAUDCNT8	        0x71	//	UART 接收数据8 位计数值。
-#define	SYS_INTSTS	        0x72	//	中断状态寄存器。
-#define	SYS_INTEN	        0x73	//	中断使能寄存器。
-#define	SYS_STS	                0x74	//	系统状态寄存器
-#define	SYS_MISC	        0x75	//	混合控制寄存器
-#define	SYS_ROMCS	        0x76	//	ROM 校验和寄存器.
+#define	DSP_CFG_CALI_RMSUA	0x2d	//	Voltage RMS ratio correction
+#define	DSP_CFG_RMS_DCUA	0x2e	//	Voltage RMS small signal correction
+#define	DSP_CFG_CALI_RMSIA	0x2f	//	Current A effective value ratio correction
+#define	DSP_CFG_RMS_DCIA	0x30	//	Current A RMS small signal correction
+#define	DSP_CFG_CALI_RMSIB	0x31	//	Current B effective value ratio difference correction
+#define	DSP_CFG_RMS_DCIB	0x32	//	Current B RMS small signal correction
+#define	DSP_CFG_PHC	        0x33	//	Angular error correction register
+#define	DSP_CFG_DCUA	        0x34	//	Voltage channel DC correction value
+#define	DSP_CFG_DCIA	        0x35	//	Current A channel DC correction value
+#define	DSP_CFG_DCIB	        0x36	//	Current B channel DC correction value
+#define	DSP_CFG_BPF	        0x37	//	Bandpass filter coefficients
+#define	DSP_CFG_CKSUM	        0x38	//	Checksum Configuration Registers
+#define	EGY_PROCTH	        0x39	//	Energy register anti-submarine threshold (less than it will not accumulate)
+#define	EGY_PWRTH	        0x3a	//	Energy register accumulation threshold. Since the energy register is 46 bits, 
+// the actual high-speed energy register accumulation threshold is this threshold * 16384; 
+// the low-speed energy register accumulation threshold is this value * 4.
+#define	EGY_CONST1	        0x3b	// Energy register 1 Accumulation constant	
+#define	EGY_OUT1L	        0x3c	//	Energy register 1 Accumulated value low
+#define	EGY_OUT1H	        0x3d	//	Energy register 1 Accumulated value high
+#define	EGY_CFCNT1	        0x3e	//	Energy register 1 Pulse mixer
+#define	EGY_CONST2	        0x3f	//	Energy register 2 Accumulation Constant
+#define	EGY_OUT2L	        0x40	//	Energy register 2 accumulated value low
+#define	EGY_OUT2H	        0x41	//	Energy register 2 Accumulated Value High
+#define	EGY_CFCNT2	        0x42	//	Energy register 2 Pulse Counter
+#define	EGY_CONST3	        0x43	//	Energy register 3 cumulative constant
+#define	EGY_OUT3	        0x44	//	Energy register 3 Accumulated Value
+#define	EGY_CFCNT3	        0x45	//	Energy register 3 Pulse Counter
+#define	EGY_CONST4	        0x46	//	Energy register 4 cumulative constant
+#define	EGY_OUT4	        0x47	//	Energy register 4 Accumulated Value
+#define	EGY_CFCNT4	        0x48	//	Energy regsiter 4 Pulse Counter
+#define	EGY_CONST5	        0x49	//  Energy register 5 Accumulation Constant
+#define	EGY_OUT5	        0x4a	//	Energy register 5 Accumulated Value
+#define	EGY_CFCNT5	        0x4b	//	Energy register 5 Pulse Counter
+#define	EGY_CONST6	        0x4c	//	Energy register 6 cumulative constant
+#define	EGY_OUT6	        0x4d	//	 Energy register 6 Accumulated Value 
+#define	EGY_CFCNT6	        0x4e	//	Energy register 6 Pulse Counter
+#define	EGY_CONST7	        0x4f	//	Energy register 7 cumulative constant
+#define	EGY_OUT7	        0x50	//	Energy register 7 Accumulated Value
+#define	EGY_CFCNT7	        0x51	//	Energy register 7 Pulse Counter
+#define	EGY_CONST8	        0x52	//	Energy register 8 cumulative constant
+#define	EGY_OUT8	        0x53	//	Energy register 8 Accumulated Value
+#define	EGY_CFCNT8	        0x54	//	Energy register 8 Pulse Counter
+#define	DSP_OV_THL	        0x55	//	Upper threshold of creep judgment
+#define	DSP_OV_THH	        0x56	//  Lower threshold for creep judgment
+#define	DSP_SWELL_THL	        0x57	//	Voltage swell lower threshold in current detection mode, 
+// it is used to determine the effective value of current
+#define	DSP_SWELL_THH	        0x58	// Voltage surge upper threshold. In current detection mode,
+// it is used to determine the effective value of current.
+#define	DSP_DIP_THL	        0x59	// Voltage sag lower threshold	
+#define	DSP_DIP_THH	        0x5a	//	Voltage sag upper threshold
+#define	FD_OVTH	                0x5b	//	Fast detection of overvoltage threshold
+#define	FD_LVTH	                0x5c	//	Fast detection of undervoltage threshold
+#define	FD_IA_OCTH	        0x5d	//	Fast detection of current channel A overcurrent threshold
+#define	FD_IA_LCTH	        0x5e	//	Fast detection of current channel A undercurrent threshold
+#define	FD_IB_OCTH	        0x5f	//	Fast detection of current channel B overcurrent threshold
+#define	FD_IB_LCTH	        0x60	//	Fast detection of current channel B undercurrent threshold
+#define	DSP_PHS_STT	        0x61	//	Phase measurement control bit, a write operation enables a phase measurement
+#define	DSP_PHS_U	        0x62	//	Voltage phase value
+#define	DSP_PHS_UN	        0x63	//  Waveform data value before voltage passes zero point	
+#define	DSP_PHS_UP	        0x64	//	Waveform data value after voltage passes zero point
+#define	DSP_PHS_I	        0x65	//	Current phase value
+#define	DSP_PHS_IN	        0x66	//	Waveform data value before the current passes zero
+#define	DSP_PHS_IP	        0x67	//	Waveform data value after the current passes zero point
+#define	TEMPERATE	        0x68	//	Temperature register
+#define	DAT_WAVE	        0x69	//  To read waveform data, you can read this address repeatedly to obtain complete waveform data 
+//If you do not need to read all the data, you can reset the read address through DSP_CTRL5 bit 31.
+#define	DAT_SWELL_CNT	        0x6a	//	Voltage surge time record, half wave as the unit. 24 bits are valid 
+//Writing any value to this address can clear the count value
+#define	DAT_DIP_CNT	        0x6b	//	Voltage sag time record, half wave as unit. 24 bits are valid 
+//Writing any value to this address can clear the count value
+#define	SYS_SFTRST	        0x6C	//	Software reset register
+#define	SYS_FPGACW0	        0x6D	//	FPGA signal source control bit 0
+#define	SYS_FPGACW1	        0x6E	//  FPGA signal source control bit 1
+#define	SYS_FPGACW2	        0x6F	//	FPGA signal source control bit 2
+#define	SYS_BAUDCNT1	        0x70	//	UART receive data 1-bit count value.
+#define	SYS_BAUDCNT8	        0x71	//	UART receive data 8-bit count value.
+#define	SYS_INTSTS	        0x72	//	Interrupt status register
+#define	SYS_INTEN	        0x73	//	Interrupt enable register
+#define	SYS_STS	                0x74	//	System Status Register
+#define	SYS_MISC	        0x75	//	Hybrid Control Register
+#define	SYS_ROMCS	        0x76	//	ROM checksum register
 #define	SYS_RAMADDR	        0x77	//	Internal RAM address register.
 #define	SYS_RAMDATA	        0x78	//	Internal RAM data register.
-#define	SYS_BLK_ADDR0	        0x79	//	块读写地址寄存器0
-#define	SYS_BLK_ADDR1	        0x7a	//	块读写地址寄存器1
-#define	SYS_BLK_ADDR2	        0x7b	//	块读写地址寄存器2
-#define	SYS_BLK_ADDR3	        0x7c	//	块读写地址寄存器3
-#define	SYS_IOCFG0	        0x7d	//	P0，P1,P2，P3输出配置寄存器
-#define	SYS_IOCFG1	        0x7e	//	P4，P5，P6输出配置寄存器
-#define	SYS_VERSION	        0x7F	//	版本号寄存器。
+#define	SYS_BLK_ADDR0	        0x79	//	Block read and write address register 0
+#define	SYS_BLK_ADDR1	        0x7a	//  Block read and write address register 1
+#define	SYS_BLK_ADDR2	        0x7b	//	Block read and write address register 2
+#define	SYS_BLK_ADDR3	        0x7c	//	Block read and write address register 3
+#define	SYS_IOCFG0	        0x7d	//	P0, P1, P2, P3 output configuration register
+#define	SYS_IOCFG1	        0x7e	//	P4, P5, P6 output configuration register
+#define	SYS_VERSION	        0x7F	// Version Number Register
 
 /*----------------------- Registers' bits definition -------------------------*/
 ///
