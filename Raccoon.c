@@ -4,15 +4,15 @@ uint8 cksdis_flag = 0;
 /*=========================================================================================\n
 * @function_name: Init_RacCtrl
 * @function_file: Raccoon.c
-* @描述: 
+* @describe:
 * 
-* @参数: 
-* @返回: 
-* @作者:   (2013-04-15)
-* @备注: 
+* @parameter: 
+* @return: 
+* @author:  (2013-04-15)
+* @Remark: 
 *-------------------------------------------------------------------------------------------
-* @修改人:  
-* @修改内容: 
+* @Modifier:
+* @Modified content:
 ===========================================================================================*/
 void Init_RacCtrl(void)
 {
@@ -22,31 +22,31 @@ void Init_RacCtrl(void)
     gs_RacCtrl.ucRevPoint=0;
     gs_RacCtrl.ucStatus=Rac_Idle;
     
-    MemSet((uint8_t *)&gs_RmsData, 0, sizeof( gs_RmsData)); //有效值变量清0
+    MemSet((uint8_t *)&gs_RmsData, 0, sizeof( gs_RmsData)); //Clear the effective value variable to 0
 }
 
 /*=========================================================================================\n
 * @function_name: RxReset_Raccoon
 * @function_file: Raccoon.c
-* @描述: 低电平有效 TX输出低电平 持续>70ms
+* @Description: Low level is valid. TX outputs low level for >70ms
 * 
-* @参数: 
-* @返回: 
-* @作者:   lwb (2013-07-10)
-* @备注: 
+* @parameter:
+* @return:
+* @author:   lwb (2013-07-10)
+* @Remark:
 *-------------------------------------------------------------------------------------------
-* @修改人:  
-* @修改内容: 
+* @Modifier:
+* @Modified content: 
 ===========================================================================================*/
 void RxReset_Raccoon(void)
 {
     GPIO_InitType GPIO_InitStruct;
 
-    //Raccoon_PwrOn();         //计量芯片电源IO口控制
-    GPIOB->OEN &=~ (BIT5);//iof0 1 给marmot供电
+    //Raccoon_PwrOn();         //Metering chip power IO port control
+    GPIOB->OEN &=~ (BIT5);//iof0 1 Powering the marmot
     GPIOB->IE  &=~ (BIT5);
     GPIOB->DAT |= (BIT5);
-    Raccoon_SlaveAddrCfg();  //器件地址设置
+    Raccoon_SlaveAddrCfg();  //Device address setting
     
     UART_DeInit(UART5);
     
@@ -59,26 +59,26 @@ void RxReset_Raccoon(void)
     //DelayXms(3);
     IO_DAT( IOB_DAT, 7) = 0;
     
-    guc_CommDelayTime = 40;   //RX引脚上持续输入70ms的低电平才能使芯片内部产生复位//zzp0219 10->12
+    guc_CommDelayTime = 40;   //The RX pin needs to be continuously low for 70ms to reset the chip. //zzp0219 10->12
     while(guc_CommDelayTime >0);
     
     IO_DAT( IOB_DAT, 7) = 1;
     
-    guc_CommDelayTime = 2;   //RX引脚输入高电平，2.15ms后，RAM才能被自由访问
+    guc_CommDelayTime = 2;   //The RX pin inputs a high level, and the RAM can be freely accessed after 2.15ms.
     while(guc_CommDelayTime >0);
 }
 /*=========================================================================================\n
 * @function_name: Init_UartRaccoon
 * @function_file: Raccoon.c
-* @描述: 
+* @describe: 
 * 
-* @参数: 
-* @返回: 
-* @作者:   lwb (2013-01-22)
-* @备注: 
+* @parameter:
+* @return:
+* @author:  lwb (2013-01-22)
+* @Remark: 
 *-------------------------------------------------------------------------------------------
-* @修改人:  
-* @修改内容: 
+* @Modified by: 
+* @Modifications:
 ===========================================================================================*/
 void Init_UartRaccoon(void)
 {
@@ -95,10 +95,10 @@ void Init_UartRaccoon(void)
     UART_StructInit(&UART_InitStruct);
     
     UART_InitStruct.Mode     = UART_MODE_RX | UART_MODE_TX;
-    UART_InitStruct.Parity   = UART_PARITY_ODD;           //奇校验
-    UART_InitStruct.WordLen  = UART_WORDLEN_9B;           //数据位9位,8位数据位+1校验位
+    UART_InitStruct.Parity   = UART_PARITY_ODD;           //Odd Parity
+    UART_InitStruct.WordLen  = UART_WORDLEN_9B;           //9 data bits, 8 data bits + 1 check bit
     UART_InitStruct.FirstBit = UART_FIRSTBIT_LSB;
-    UART_InitStruct.Baudrate = 4800;                      //固定波特率4800
+    UART_InitStruct.Baudrate = 4800;                      //Fixed baud rate 4800
     UART_Init(UART5, &UART_InitStruct);
 
     UART_INTConfig(UART5, UART_INT_RX, ENABLE);
@@ -109,15 +109,15 @@ void Init_UartRaccoon(void)
 /*=========================================================================================\n
 * @function_name: Raccoon_Dy10ms
 * @function_file: Raccoon.c
-* @描述: 模拟串口的超时保护
-*       为防止锁死，定时保护，当没有任何数据发送和接收的时候，初始化
-* @参数:
-* @返回:
-* @作者:   lwb (2012-03-28)
-* @备注:
+* @Description: Timeout protection for analog serial port
+*       To prevent locking and timing protection, when there is no data sent or received, the
+* @parameter:
+* @return:
+* @author:   lwb (2012-03-28)
+* @Remark:
 *-------------------------------------------------------------------------------------------
-* @修改人:
-* @修改内容:
+* @Modified by:
+* @Modifications:
 ===========================================================================================*/
 void Raccoon_Dy10ms(void)
 {
@@ -139,15 +139,15 @@ void Raccoon_Delay(uint8_t n)//zzp0113
 /*=========================================================================================\n
 * @function_name: Raccoon_UartTransmit
 * @function_file: Raccoon.c
-* @描述: UART4发送,中断中调用
+* @Description: UART4 sends, called in interrupt
 *
-* @参数:
-* @返回:
-* @作者:   lwb (2012-03-28)
-* @备注:
+* @parameter:
+* @return:
+* @author:   lwb (2012-03-28)
+* @Remark:
 *-------------------------------------------------------------------------------------------
-* @修改人:
-* @修改内容:
+* @Modified by:
+* @Modifications:
 ===========================================================================================*/
 void Raccoon_UartTransmit(void)
 {
@@ -166,15 +166,15 @@ void Raccoon_UartTransmit(void)
 /*=========================================================================================\n
 * @function_name: Raccoon_UartReceive
 * @function_file: Raccoon.c
-* @描述: 在中断中调用该函数
+* @Description: Call this function in an interrupt
 *
-* @参数:
-* @返回:
-* @作者:   lwb (2012-03-28)
-* @备注:
+* @parameter:
+* @return:
+* @author:  lwb (2012-03-28)
+* @Remark:
 *-------------------------------------------------------------------------------------------
-* @修改人:
-* @修改内容:
+* @Remark:
+* @Modifications:
 ===========================================================================================*/
 void Raccoon_UartReceive(void)
 {
@@ -196,18 +196,18 @@ void Raccoon_UartReceive(void)
 /*=========================================================================================\n
 * @function_name: WriteRaccoon
 * @function_file: Raccoon.h
-* @描述: 向raccoon发送数据
+* @Description: Send data to raccoon
 * 
 * 
-* @参数: 
-* @param:Data  写入数据
+* @parameter: 
+* @param:Data  Writing Data
 *
-* @param:addr  写入地址
-* 控制
-* @返回: 
+* @param:addr Write address  
+* control
+* @return:
 * @return: uint8 
-* @作者:   lwb (2013-07-04)
-* @备注: 
+* @Author: lwb (2013-07-04))
+* @Remark:
 *------------------------------------------------------------------------------------------
 ===========================================================================================*/
 uint8_t  WriteRaccoon( uint32_t Data, uint8_t Addr)
@@ -223,7 +223,7 @@ uint8_t  WriteRaccoon( uint32_t Data, uint8_t Addr)
     gs_RacCtrl.ucBuf[4] = (uint8_t)((Data&0x0000ff00)>>8);
     gs_RacCtrl.ucBuf[5] = (uint8_t)((Data&0x00ff0000)>>16);
     gs_RacCtrl.ucBuf[6] = (uint8_t)((Data&0xff000000)>>24);
-    //计算校验和
+    //Calculate Checksum
     gs_RacCtrl.ucBuf[7] =  0;
     for(i=1;i<7;i++)
     {
@@ -235,17 +235,17 @@ uint8_t  WriteRaccoon( uint32_t Data, uint8_t Addr)
 
     ucSum = gs_RacCtrl.ucBuf[7];
     
-    gs_RacCtrl.ucStatus=Rac_Send;       //进入发送状态
+    gs_RacCtrl.ucStatus=Rac_Send;       //Enter sending state
     gs_RacCtrl.ucSendLen=8;
     gs_RacCtrl.ucSendPoint=0;
     gs_RacCtrl.ucRevLen=1;
     gs_RacCtrl.ucRevPoint=0;                 
-    Raccoon_UartTransmit();                    //开启发送
+    Raccoon_UartTransmit();                    //Start Sending
 //    guc_CommDelayTime=7;
-    guc_CommDelayTime = (uint8_t)((BAUDRate_1Byte_OverTime * 9 +10)/10)+1;//发送8个字节,接收1个字节 单位:10ms 进一制
+    guc_CommDelayTime = (uint8_t)((BAUDRate_1Byte_OverTime * 9 +10)/10)+1;//Send 8 bytes, receive 1 byte Unit: 10ms
     while(gs_RacCtrl.ucStatus!=Rac_WaitPro)
     {
-        ClearWDT();	//喂狗
+        ClearWDT();	//Feed the Dog
         if((guc_CommDelayTime==0))
         {
           
@@ -257,7 +257,7 @@ uint8_t  WriteRaccoon( uint32_t Data, uint8_t Addr)
           
           
             //MemSet((uint8_t *)&gs_RmsData, 0x5555, sizeof( gs_RmsData)); //zzp0124
-            return false;                   //如果超时   
+            return false;                   //If timeout  
         }
     }
     DelayXms(6);
@@ -273,21 +273,21 @@ uint8_t  WriteRaccoon( uint32_t Data, uint8_t Addr)
 /*=========================================================================================\n
 * @function_name: ReadRaccoon
 * @function_file: Raccoon.h
-* @描述: 向raccoon读取数据
+* @Description: Read data from raccoon
 * 
-* @参数: 
-* @param:Addr  读取起始地址
-* @param:num  读取word个数，32bit
+* @parameter:
+* @param:Addr  Read start address
+* @param:num   Read word number, 32bit
 * 
-* @返回: 
+* @return: 
 *        
 * @return: uint8 
-* @作者:   lwb (2013-07-04)
-* @备注: 
+* @author:   lwb (2013-07-04)
+* @Remark: 
 *-------------------------------------------------------------------------------------------
-* @修改人:  hjj
-* @修改内容: 添加Raccoon物理地址，三相表一共使用3个Raccoon
-* @param:Phyadd Raccoon地址
+* @Modified by: hjj
+* @Modifications: Added Raccoon physical address, three-phase meter uses 3 Raccoons in total
+* @param:Phyadd Raccoon address
 
 ==========================================================================================*/
 uint8_t ReadRaccoon(uint8_t Addr,uint8_t num)
@@ -298,12 +298,12 @@ uint8_t ReadRaccoon(uint8_t Addr,uint8_t num)
     
 //    gs_RacCtrl.ucBuf[0] = 0xfe;
     gs_RacCtrl.ucBuf[0] = 0x7d;
-    gs_RacCtrl.ucBuf[1] = (uint8_t)(((num -1)<< 4) | ((SlaveAddr) << 2) | RacRead); //num：需要读取多少字的内容
+    gs_RacCtrl.ucBuf[1] = (uint8_t)(((num -1)<< 4) | ((SlaveAddr) << 2) | RacRead); //num：How many words should be read?
     gs_RacCtrl.ucBuf[2] = (uint8_t)(Addr&0x007f);   //Register address  Bit[6:0]
     Raccoon_Cmd1 = gs_RacCtrl.ucBuf[1];
     Raccoon_Cmd2 = gs_RacCtrl.ucBuf[2];
     
-    gs_RacCtrl.ucBuf[3] = 0;                    //sum 清零
+    gs_RacCtrl.ucBuf[3] = 0;                    //sum Clear
     for(i=1;i<3;i++)
     {
         gs_RacCtrl.ucBuf[3] += gs_RacCtrl.ucBuf[i]; 
@@ -312,18 +312,18 @@ uint8_t ReadRaccoon(uint8_t Addr,uint8_t num)
     gs_RacCtrl.ucBuf[3]  = ~gs_RacCtrl.ucBuf[3];
     gs_RacCtrl.ucBuf[3]  = gs_RacCtrl.ucBuf[3]+0x33;
     
-    gs_RacCtrl.ucStatus=Rac_Send;       //进入发送状态
+    gs_RacCtrl.ucStatus=Rac_Send;       // Enter sending state
     
     gs_RacCtrl.ucSendLen=4;
     gs_RacCtrl.ucSendPoint=0;
     gs_RacCtrl.ucRevLen=(num*4)+1;           
     gs_RacCtrl.ucRevPoint=0;
 //    guc_CommDelayTime=17;
-    guc_CommDelayTime = (uint8_t)((BAUDRate_1Byte_OverTime * (4*num+5) +10)/10)+1;//发送4个字节,接收4*N+1个字节 单位:10ms 进一制
+    guc_CommDelayTime = (uint8_t)((BAUDRate_1Byte_OverTime * (4*num+5) +10)/10)+1;//Send 4 bytes, receive 4*N+1 bytes Unit: 10ms
     Raccoon_UartTransmit();
     while(gs_RacCtrl.ucStatus!=Rac_WaitPro)
     {
-        ClearWDT();	//喂狗
+        ClearWDT();	//Feed the Dog
         if((guc_CommDelayTime==0))
         {
             
@@ -334,11 +334,11 @@ uint8_t ReadRaccoon(uint8_t Addr,uint8_t num)
           cksdis_flag += 2;
           
             //MemSet((uint8_t *)&gs_RmsData, 0x1111, sizeof( gs_RmsData)); //zzp0124
-            return false;           //如果超时  
+            return false;           //If timeout
         }
     }
     ucSum = Raccoon_Cmd1+Raccoon_Cmd2;
-    for(i=0;i<(num*4);i++)               //读取不超过255个字节
+    for(i=0;i<(num*4);i++)               //Read no more than 255 bytes
     {
         ucSum += gs_RacCtrl.ucBuf[i]; 
     }
@@ -359,19 +359,19 @@ uint8_t ReadRaccoon(uint8_t Addr,uint8_t num)
 /*=========================================================================================\n
 * @function_name: BroadcastWriteRaccoon
 * @function_file: Raccoon.c
-* @描述: 
+* @describe: 
 * 
 * 
-* @参数: 
+* @parameter: 
 * @param:Data  
 * @param:Addr  
  
-* @返回: 
-* @作者:   lwb (2013-09-25)
-* @备注: 
+* @return:
+* @author:   lwb (2013-09-25)
+* @Remark:
 *-------------------------------------------------------------------------------------------
-* @修改人:  
-* @修改内容: 
+* @Modified by:
+* @Modifications: 
 ===========================================================================================*/ 
 void BroadcastWriteRaccoon(uint32_t Data,uint8_t Addr)
 {
@@ -387,7 +387,7 @@ void BroadcastWriteRaccoon(uint32_t Data,uint8_t Addr)
     gs_RacCtrl.ucBuf[4] = (uint8_t)((Data&0x0000ff00)>>8);
     gs_RacCtrl.ucBuf[5] = (uint8_t)((Data&0x00ff0000)>>16);
     gs_RacCtrl.ucBuf[6] = (uint8_t)((Data&0xff000000)>>24);
-    //计算校验和
+    //Calculate Checksum
     gs_RacCtrl.ucBuf[7] =  0;
     for(i=1;i<7;i++)
     {
@@ -397,32 +397,32 @@ void BroadcastWriteRaccoon(uint32_t Data,uint8_t Addr)
     gs_RacCtrl.ucBuf[7]  = ~gs_RacCtrl.ucBuf[7];
     gs_RacCtrl.ucBuf[7]  = gs_RacCtrl.ucBuf[7]+0x33;
 
-    gs_RacCtrl.ucStatus=Rac_Send;       //进入发送状态
+    gs_RacCtrl.ucStatus=Rac_Send;       //Enter sending state
     gs_RacCtrl.ucSendLen=8;
     gs_RacCtrl.ucSendPoint=0;
     gs_RacCtrl.ucRevLen=0;
     gs_RacCtrl.ucRevPoint=0;
     
     Raccoon_UartTransmit();
-    guc_CommDelayTime = (uint8_t)((BAUDRate_1Byte_OverTime * 8 +10)/10);//发送8个字节,接收0个字节 单位:10ms 进一制
+    guc_CommDelayTime = (uint8_t)((BAUDRate_1Byte_OverTime * 8 +10)/10);//Send 8 bytes, receive 0 bytes Unit: 10ms
     while(guc_CommDelayTime>0)
     {
-      ClearWDT();	//喂狗
+      ClearWDT();	//Feed the Dog
     }   
 }
 
 /*=========================================================================================\n
 * @function_name: Raccoon_UpdatePar
 * @function_file: Raccoon.c
-* @描述更新校表参数，相位通电情况
+* @Describes the update of calibration parameters and phase power-on status
 * 
-* @参数:
-* @返回: 
-* @作者:   hjj (2013-10-17)
-* @备注: 
+* @parameter:
+* @return:
+* @author:  hjj (2013-10-17)
+* @Remark: 
 *-------------------------------------------------------------------------------------------
-* @修改人:  
-* @修改内容: 
+* @Modified by: 
+* @Modifications:
 ===========================================================================================*/
 void Raccoon_UpdatePar(void)
 {
@@ -433,7 +433,7 @@ void Raccoon_UpdatePar(void)
     //testshow = 0x22222;
     for( i = 0; i < (sizeof(RegAddr)/sizeof(uint8)); i++)
     {
-        if(i < 9)   //控制
+        if(i < 9)   //control
         {
             if(i == 4)
             {
@@ -467,12 +467,12 @@ void Raccoon_UpdatePar(void)
             {
               RacReg_buf = (uint32)*((&gs_JbPm.ul_EGYTH) + i - 9);
             }
-            else// i>18以后RegAddr[i]对应&gs_JbPm.ul_EGYTH) + i - 5
+            else // after i>18, RegAddr[i] corresponds to &gs_JbPm.ul_EGYTH) + i - 5
             {
               RacReg_buf = (uint32)*((&gs_JbPm.ul_EGYTH) + i - 5);
             }
             
-            if(i == 15)  //功率
+            if(i == 15)  //power
             {
                 CLRWDT();
                 tmp = WriteRaccoon( RacReg_buf, RegAddr[i]);
@@ -483,7 +483,7 @@ void Raccoon_UpdatePar(void)
                 CLRWDT(); 
                 ucSum += RacReg_buf;
                 
-                tmp = WriteRaccoon(RacReg_buf, DSP_CFG_CALI_QA);  //无功比差 = 有功比差
+                tmp = WriteRaccoon(RacReg_buf, DSP_CFG_CALI_QA);  //Reactive power ratio difference = Active power ratio difference
 //                if(tmp ==false)
 //                {
 //                  WriteRaccoon( RacReg_buf, DSP_CFG_CALI_QA);
@@ -502,7 +502,7 @@ void Raccoon_UpdatePar(void)
                 CLRWDT(); 
                 ucSum += RacReg_buf;
                 
-                tmp = WriteRaccoon(RacReg_buf, DSP_CFG_CALI_QB);  //无功比差 = 有功比差
+                tmp = WriteRaccoon(RacReg_buf, DSP_CFG_CALI_QB);  //Reactive power ratio difference = Active power ratio difference
 //                if(tmp ==false)
 //                {
 //                  WriteRaccoon( RacReg_buf, DSP_CFG_CALI_QB);
@@ -511,7 +511,7 @@ void Raccoon_UpdatePar(void)
                 ucSum += RacReg_buf;
             }
             
-            else  //门限和校表
+            else  //Threshold and Calibration
             {
                 CLRWDT();  
                 tmp = WriteRaccoon( RacReg_buf, RegAddr[i]);
@@ -525,7 +525,7 @@ void Raccoon_UpdatePar(void)
         }
     }
     
-    ucSum = 0xFFFFFFFF-ucSum;    //校验和寄存器 DSP_CFG_CKSUM  0x0~0x7，0x25~0x3a，0x55~0x60
+    ucSum = 0xFFFFFFFF-ucSum;    //Checksum register DSP_CFG_CKSUM  0x0~0x7，0x25~0x3a，0x55~0x60
     tmp = WriteRaccoon( ucSum, DSP_CFG_CKSUM);
 //    if(tmp ==false)
 //    {
@@ -533,13 +533,13 @@ void Raccoon_UpdatePar(void)
 //    }
     CLRWDT(); 
     
-    tmp = WriteRaccoon( SYS_IOCFG0_Value, SYS_IOCFG0); //IO口配置
+    tmp = WriteRaccoon( SYS_IOCFG0_Value, SYS_IOCFG0); //IO port configuration
 //    if(tmp ==false)
 //    {
 //      WriteRaccoon( SYS_IOCFG0_Value, SYS_IOCFG0);
 //    }
     CLRWDT(); 
-    tmp = WriteRaccoon( SYS_IOCFG1_Value, SYS_IOCFG1); //IO口配置
+    tmp = WriteRaccoon( SYS_IOCFG1_Value, SYS_IOCFG1); //IO port configuration
 //    if(tmp ==false)
 //    {
 //      WriteRaccoon( SYS_IOCFG1_Value, SYS_IOCFG1);
@@ -547,7 +547,7 @@ void Raccoon_UpdatePar(void)
     CLRWDT(); 
     
     
-    WriteRaccoon(0x00000018, 0x75); //chksum错不关闭cf
+    WriteRaccoon(0x00000018, 0x75); //chksum Wrong not to close cf
 //    Raccoon_UpdateChecksum();
 //    CLRWDT(); 
     //testshow = 0x33333;
@@ -556,17 +556,17 @@ void Raccoon_UpdatePar(void)
 /*=========================================================================================\n
 * @function_name: Raccoon_ReadRMS
 * @function_file: Raccoon.c
-* @描述: 
+* @describe: 
 * 
 * 
-* @参数: 
+* @parameter: 
 * @param:  
-* @返回: 
-* @作者:   lwb (2013-09-25)
-* @备注: 
+* @return:
+* @author: lwb (2013-09-25)
+* @Remark: 
 *-------------------------------------------------------------------------------------------
-* @修改人:  
-* @修改内容: 
+* @Modified by:  
+* @Modifications: 
 ===========================================================================================*/
 void Raccoon_ReadRMS(void)
 {
@@ -589,14 +589,14 @@ void Raccoon_ReadRMS(void)
 //******************************************************************************
         if(gs_Channel.ucSta == SETA)
         {
-          if(i == 0)//A路有功  用于CF累加
+          if(i == 0)//Active power of channel A is used for CF accumulation
           {
             Buf_RMS.ul_P = gs_RmsData.ul_P;
             if((Buf_RMS.ul_P >>24)>0X7f)
             {
               Buf_RMS.ul_P = ~Buf_RMS.ul_P+1;
             }
-            if((float)Buf_RMS.ul_P/gs_JbPm.ul_PG < (((float)(gs_JbPm.ui_Ib/1000)*(gs_JbPm.ui_Un/100))*1.5/1000))//额定1.5‰   1.1W(0.1%) *1.5
+            if((float)Buf_RMS.ul_P/gs_JbPm.ul_PG < (((float)(gs_JbPm.ui_Ib/1000)*(gs_JbPm.ui_Un/100))*1.5/1000))//Rated 1.5‰ 1.1W(0.1%) *1.5
             {
               gs_power_energycal.ul_power[0] = 0;
 //              gs_power_energycal.ul_power[0] = 0x1234567;
@@ -606,14 +606,14 @@ void Raccoon_ReadRMS(void)
               gs_power_energycal.ul_power[0] = Buf_RMS.ul_P;
             }
           }
-          if(i == 1)//A路无功
+          if(i == 1)//A-way reactive power
           {
             Buf_RMS.ul_Q = gs_RmsData.ul_Q;
             if((Buf_RMS.ul_Q >>24)>0X7f)
             {
               Buf_RMS.ul_Q = ~Buf_RMS.ul_Q+1;
             }
-            if((float)Buf_RMS.ul_Q/gs_JbPm.ul_PG < (((float)(gs_JbPm.ui_Ib/1000)*(gs_JbPm.ui_Un/100))*1.5/1000))//额定1.5‰   1.1W(0.1%) *1.5
+            if((float)Buf_RMS.ul_Q/gs_JbPm.ul_PG < (((float)(gs_JbPm.ui_Ib/1000)*(gs_JbPm.ui_Un/100))*1.5/1000))//Rated 1.5‰ 1.1W(0.1%) *1.5
             {
               gs_power_energycal.ul_Npower[0] = 0;
 //              gs_power_energycal.ul_Npower[0] = 0x1234567;
@@ -628,14 +628,14 @@ void Raccoon_ReadRMS(void)
         
         if(gs_Channel.ucSta == SETB)
         {
-            if(i == 6)//B路有功
+            if(i == 6)//BRoad is a success
             {
               Buf_RMS.ul_PB = gs_RmsData.ul_PB;
               if((Buf_RMS.ul_PB >>24)>0X7f)
               {
                 Buf_RMS.ul_PB = ~Buf_RMS.ul_PB+1;
               }
-              if((float)Buf_RMS.ul_PB/gs_JbPm.ul_PG < (((float)(gs_JbPm.ui_Ib/1000)*(gs_JbPm.ui_Un/100))*1.5/1000))//额定1.5‰   1.1W(0.1%) *1.5
+              if((float)Buf_RMS.ul_PB/gs_JbPm.ul_PG < (((float)(gs_JbPm.ui_Ib/1000)*(gs_JbPm.ui_Un/100))*1.5/1000))//Rated 1.5‰ 1.1W(0.1%) *1.5
               {
                 gs_power_energycal.ul_power[0] = 0;
 //                gs_power_energycal.ul_power[0] = 0x1234567;
@@ -645,14 +645,14 @@ void Raccoon_ReadRMS(void)
                 gs_power_energycal.ul_power[0] = Buf_RMS.ul_PB;
               }
             }
-            if(i == 7)//B路无功
+            if(i == 7)//BRoad reactive
             {
               Buf_RMS.ul_QB = gs_RmsData.ul_QB;
               if((Buf_RMS.ul_QB >>24)>0X7f)
               {
                 Buf_RMS.ul_QB = ~Buf_RMS.ul_QB+1;
               }
-              if((float)Buf_RMS.ul_QB/gs_JbPm.ul_PG < (((float)(gs_JbPm.ui_Ib/1000)*(gs_JbPm.ui_Un/100))*1.5/1000))//额定1.5‰   1.1W(0.1%) *1.5
+              if((float)Buf_RMS.ul_QB/gs_JbPm.ul_PG < (((float)(gs_JbPm.ui_Ib/1000)*(gs_JbPm.ui_Un/100))*1.5/1000))//Rated 1.5‰ 1.1W(0.1%) *1.5
               {
                 gs_power_energycal.ul_Npower[0] = 0;
 //                gs_power_energycal.ul_Npower[0] = 0X1234567;
@@ -705,7 +705,7 @@ void Raccoon_ReadRMS(void)
 //******************************************************************************        
     }else
     {
-        ReadRmsErrFlg = 1;   //读取有效值存在通信异常
+        ReadRmsErrFlg = 1;   //Communication anomaly when reading valid value
         cksdis_flag += 3;//zzp
         
     }
@@ -715,18 +715,18 @@ void Raccoon_ReadRMS(void)
     if( ReadRmsErrCnt < 3)
     {
         ReadRmsErrCnt++;
-    }else                   //连续3次通信异常，复位计量芯片
+    }else                   //If communication is abnormal for 3 times in a row, reset the metering chip
     {
-//        MemSet((uint8_t *)&gs_RmsData, 0, sizeof( gs_RmsData)); //有效值变量清0
+//        MemSet((uint8_t *)&gs_RmsData, 0, sizeof( gs_RmsData)); //Clear the effective value variable to 0
 //        RxReset_Raccoon();
-//        Init_UartRaccoon();         //计量串口初始化
-//        Raccoon_UpdatePar();        //计量参数刷新
+//        Init_UartRaccoon();         //Metering serial port initialization
+//        Raccoon_UpdatePar();        //Metering parameter refresh
       
-//      ReadRmsErrCnt = 0;    //复位计量芯片，读取有效值异常计数值清0
+//      ReadRmsErrCnt = 0;    //Reset the metering chip and clear the abnormal count value when reading the effective value
     }
   }else
   {
-      ReadRmsErrCnt = 0;    //通信正常，读取有效值异常计数值清0
+      ReadRmsErrCnt = 0;    //Communication is normal, reading the effective value is abnormal, the count value is cleared to 0
       
       //***********************************************************************
 //         if(gs_ComGroup[ComIndex_Uart2].ucStt == ComStt_Idle) 
@@ -805,17 +805,17 @@ void Raccoon_ReadRMS(void)
 /*=========================================================================================\n
 * @function_name: Raccoon_RunCheck
 * @function_file: Raccoon.c
-* @描述: 
+* @describe:
 * 
 * 
-* @参数: 
+* @parameter:
 * @param:  
-* @返回: 
-* @作者:   lwb (2013-09-25)
-* @备注: 
+* @return: 
+* @author:   lwb (2013-09-25)
+* @Remark: 
 *-------------------------------------------------------------------------------------------
-* @修改人:  
-* @修改内容: 
+* @Modified by:  
+* @Modifications:
 ===========================================================================================*/
 void Raccoon_RunCheck(void)
 {
@@ -825,13 +825,13 @@ void Raccoon_RunCheck(void)
 //    //MemCpy( ucbuf, gs_RacCtrl.ucBuf+3, 4);
 //    MemCpy( ucbuf, gs_RacCtrl.ucBuf, 4);//zzp0114
 //    
-//    if((ucbuf[1] & BIT6) == BIT6)           //校验和错误 bit14
+//    if((ucbuf[1] & BIT6) == BIT6)           //Checksum Error bit14
 //    {
 //      
-//      MemSet((uint8_t *)&gs_RmsData, 0, sizeof( gs_RmsData)); //有效值变量清0
+//      MemSet((uint8_t *)&gs_RmsData, 0, sizeof( gs_RmsData)); //Clear the effective value variable to 0
 //      RxReset_Raccoon();
-//      Init_UartRaccoon();         //计量串口初始化
-//      Raccoon_UpdatePar();        //计量参数刷新
+//      Init_UartRaccoon();         //Metering serial port initialization
+//      Raccoon_UpdatePar();        //Metering parameter refresh
 //      WriteRaccoon(0x00004000,0x72);//zzp0116
 //    }      
 //  }
@@ -841,7 +841,7 @@ void Raccoon_RunCheck(void)
 //**Input Parameters : None
 //**Output Parameters: None
 //**return           : None
-//**Description      ：TMR1初始化
+//**Description      ：TMR1 initialization
 //-----------------------------------------------------------------
 void Raccoon_TMR1_Init(void)
 {
@@ -854,7 +854,7 @@ void Raccoon_TMR1_Init(void)
 //  TMR_Init(TMR1, &TMR_InitStruct);
 //  
 //  TMR_INTConfig(TMR1, ENABLE);  //Enable Timer1 interrupt
-//  CORTEX_SetPriority_ClearPending_EnableIRQ(TMR1_IRQn, 0); //优先级高
+//  CORTEX_SetPriority_ClearPending_EnableIRQ(TMR1_IRQn, 0); //High priority
 //  
 //  TMR_Cmd(TMR1, DISABLE);  //DISABLE Timer1
 }
@@ -864,14 +864,14 @@ void Raccoon_TMR1_Init(void)
 //**Input Parameters : None
 //**Output Parameters: None
 //**return           : None
-//**Description      ：EXTI5初始化
+//**Description      ：EXTI5 initialization
 //-----------------------------------------------------------------
 void Raccoon_EXTI5_Init(void)
 {
 //  PMU_WakeUpPinConfig(GPIO_Pin_5, IOA_FALLING);
 //  PMU_ClearIOAINTStatus(GPIO_Pin_5);
 //  PMU_INTConfig(PMU_INT_IOAEN, ENABLE);
-//  CORTEX_SetPriority_ClearPending_EnableIRQ(PMU_IRQn, 0); //优先级高
+//  CORTEX_SetPriority_ClearPending_EnableIRQ(PMU_IRQn, 0); //High priority
 }
 
 
@@ -880,7 +880,7 @@ void Raccoon_EXTI5_Init(void)
 //**Input Parameters : None
 //**Output Parameters: None
 //**return           : None
-//**Description      ：发送CF脉冲灯
+//**Description      ：Send CF pulse light
 //-----------------------------------------------------------------
 void Raccoon_CFCtrl(void)
 {
@@ -893,8 +893,8 @@ void Raccoon_CFCtrl(void)
 //    }
 //    if((GPIOA->STS & BIT5) == 0)
 //    {
-//        TMR1->VALUE  =  0;      //清空定时器计数值
-//        TMR_Cmd(TMR1, ENABLE);  //开Timer1
+//        TMR1->VALUE  =  0;      //Clear the timer count value
+//        TMR_Cmd(TMR1, ENABLE);  //openTimer1
 //        
 //        CF_ENABLE();
 //        __enable_interrupt();        
@@ -945,7 +945,7 @@ void Raccoon_UpdateChecksum(void)
   WriteRaccoon(sum,DSP_CFG_CKSUM);
   sum = 0;
   WriteRaccoon(0x0000FFFF,0x72);
-  ReadRaccoon(0x72,1);//读标志清标志位
+  ReadRaccoon(0x72,1);//Read flag clear flag
 }
 
 void DMA_DataUpload(void)
