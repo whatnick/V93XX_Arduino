@@ -305,7 +305,7 @@
 
 #define HZ_CONFIG  FRC_50HZ
 //--------------------------------------------------------------
-//DSP_ANA1寄存器值  0x01   U: x4  IA: x32  IB: x4
+//DSP_ANA1 Register Value  0x01   U: x4  IA: x32  IB: x4
 //--------------------------------------------------------------
 #if ( PPM_VALUE == SysCtrl_80PPM)
 
@@ -341,12 +341,12 @@
 //--------------------------------------------------------------
 #elif ( PPM_VALUE == SysCtrl_0PPM)
 
-//  #define DSP_ANA1_Value    0x00170489          //电流I1增益由64倍改为32倍4->0 低4位0->9 0ppm改为-51ppm 
+//  #define DSP_ANA1_Value    0x00170489   //Current I1 gain changed from 64 times to 32 times 4->0 Lower 4 bits 0->9 0ppm changed to -51ppm
 #define DSP_ANA1_Value    0x00870089 
 //  #define DSP_ANA1_Value    0x00078089
-// 0 PPM  0x00178480 00 01 10测外部晶振或8530提供高频时 4分频群脉冲没问题
-//bit31-30 adc时钟频率800K  BIT22-21 6.5M打开 BGP打开 BIT18-16电压 A路 B路adc打开  BIT15 使用13M晶振才置1
-//BIT14-12 B路电流adc增益 4倍  BIT11 电压adc增益 4倍  A路电流adc增益 64倍 BIT7 晶体停振检测使能
+// 0 PPM  0x00178480 00 01 10When measuring the external crystal oscillator or 8530 providing high frequency, there is no problem with the 4-frequency group pulse
+//bit31-30 adc时钟频率800K  BIT22-21  6.5M is on, BGP is on, BIT18-16 voltage, A channel, B channel adc is on, BIT15 is set to 1 only when using 13M crystal oscillator
+// BIT14-12 B-channel current ADC gain 4 times BIT11 voltage ADC gain 4 times A-channel current ADC gain 64 times BIT7 crystal stop detection enable
 //--------------------------------------------------------------
 #elif ( PPM_VALUE == SysCtrl_F10PPM)
 
@@ -384,25 +384,25 @@
 #endif
 
 //--------------------------------------------------------------
-//DSP_CTRL0寄存器值  0x01   
-//DSP工作模式:0        平均功率、有效值刷新时间:640ms  视在功率计算源选择:通过功率值计算
-//平均电网频率(320ms)  瞬时功率值刷新时间:20ms         瞬时有效值刷新时间:10ms
+//DSP_CTRL0 Register value 0x01
+// DSP working mode: 0 Average power, effective value refresh time: 640ms Apparent power calculation source selection: Calculated by power value
+// Average grid frequency (320ms) Instantaneous power value refresh time: 20ms Instantaneous effective value refresh time: 10ms
 //--------------------------------------------------------------
 #if ( HZ_CONFIG == FRC_50HZ)
 
-  #define DSP_CTRL0_Value   0x01000f07//0x00000F57   //DSP_CTRL0寄存器值   0x02   50Hz  0x01000F07 0x01000F37  群脉冲测试时有修改
-//BIT31 瞬时有功率、效值刷新时间 0 20ms 10ms BIT29-28 平均频率刷新320ms  BIT24 视在功率计算源选择 0有效值 1功率值
+  #define DSP_CTRL0_Value   0x01000f07//0x00000F57   //DSP_CTRL0 register value 0x02 50Hz 0x01000F07 0x01000F37 Modified during group pulse test
+//BIT31 Instantaneous power, effective value refresh time 0 20ms 10ms BIT29-28 Average frequency refresh 320ms BIT24 Apparent power calculation source selection 0 Effective value 1 Power value
 //BIT23-20 基波通道选择 0 通道1基波有功A 通道2基波有功B BIT19-18 无功功率B A模式 0 全波无功 1基波
 //BIT17-13 全波功率 计算基波数据 全波电压 电流A B有效值 是否经过高通滤波器 0经过 BIT11-10 平均有效值刷新时间 11 640ms 00 40ms
-//BIT9-8 平均功率刷新 11 640ms 00 80ms 
-//BIT7-4 DSP MODE 6：:3.2M 每周波采样点64
+//BIT9-8 Average power refresh 11 640ms 00 80ms
+//BIT7-4 DSP MODE 6: 3.2M, 64 sampling points per cycle
 //BIT3 0：50Hz 1：60Hz
-//BIT2 1 0 电压 电流B 电流A通道开关（包括adc和dsp）
+//BIT2 1 0 Voltage Current B Current A channel switch (including adc and dsp)
 //
 #elif ( HZ_CONFIG == FRC_60HZ)
 
- // #define DSP_CTRL0_Value   0x01000F3F   //DSP_CTRL0寄存器值   0x02   60Hz
-#define DSP_CTRL0_Value   0x01000F0F   //DSP_CTRL0寄存器值   0x02   60Hz
+ // #define DSP_CTRL0_Value   0x01000F3F   //DSP_CTRL0 register value 0x02 60Hz
+#define DSP_CTRL0_Value   0x01000F0F   // DSP_CTRL0 register value 0x02 60Hz
 #else
   #error "HZ_CONFIG is error"
 #endif
@@ -440,50 +440,50 @@
 
 
 //--------------------------------------------------------------
-//#define DSP_ANA0_Value    0x00100c00//0x02000C00    //DSP_ANA0寄存器值    0x00  0x02700C00 
+//#define DSP_ANA0_Value 0x00100c00//0x02000C00 //DSP_ANA0 register value 0x00 0x02700C00
 #define DSP_ANA0_Value    0x00100C00
-//#define DSP_ANA0_Value    0x02000C00   //DSP_ANA0寄存器值    0x00  0x02700C00 
+//#define DSP_ANA0_Value    0x02000C00   //DSP_ANA0    0x00  0x02700C00 Register Value
 
-//2对应BIT25 晶体时钟为adc时钟时分频使能1:1/2  C对应BIT11 10 电流 电压ADC输入短路
-//#define DSP_CTRL1_Value   0x000C32C1   //DSP_CTRL1寄存器值   0x03
-//**C对应BIT19-18 过零点方式3：关闭过零点功能 3对应BIT13 12 CF2输出使能 CF2输入源选择0：能量桶1 1：能量桶2**/
-//**2对应BIT9 CF1输出使能 BIT8 CF1输入源选择0：能量桶1 1：能量桶2                                        **/
-//**C对应BIT7-6 能量桶2使能 能量桶1使能 BIT5-4 脉冲宽度0:80ms  BIT0 告诉能量桶防潜开关1：使能             **/
 
-//#define DSP_CTRL2_Value   0x00001723   //DSP_CTRL2寄存器值   0x04    1723
-//**1对应BIT12 能量桶2 B通道累加开关  BIT11-10 1 无功功率累加     BIT9-8 3:能量桶累加绝对值**/
-//**BIT7-6 能量桶1累加模式 0:功率累加 BIT5 能量桶1A通道累加开关   BIT1-0 3:能量桶累加绝对值**/
+//#define DSP_CTRL1_Value   0x000C32C1   //DSP_CTRL1 Register Value   0x03
+//**C corresponds to BIT19-18 Zero-crossing mode 3: Turn off the zero-crossing function 3 corresponds to BIT13 12 CF2 output enable CF2 input source selection 0: Energy bucket 1 1: Energy bucket 2**/
+//**2 corresponds to BIT9 CF1 output enable BIT8 CF1 input source selection 0: Energy bucket 1 1: Energy bucket 2                                        **/
+//**C corresponds to BIT7-6 Energy bucket 2 enable Energy bucket 1 enable BIT5-4 Pulse width 0: 80ms BIT0 tells the energy bucket anti-submarine switch 1: Enable **/
+//2 corresponds to BIT25. When the crystal clock is ADC clock, the frequency division is enabled 1:1/2. C corresponds to BIT11. 10. Current voltage ADC input short circuit
+//#define DSP_CTRL2_Value 0x00001723 //DSP_CTRL2 register value 0x04 1723
+//**1 corresponds to BIT12 Energy bucket 2 B channel accumulation switch BIT11-10 1 Reactive power accumulation BIT9-8 3: Energy bucket accumulation absolute value **/
+//**BIT7-6 Energy bucket 1 accumulation mode 0: Power accumulation BIT5 Energy bucket 1A channel accumulation switch BIT1-0 3: Energy bucket accumulation absolute value**/
 
-#define DSP_CTRL1_Value   0x000C32C1   //DSP_CTRL1寄存器值   0x03
-#define DSP_CTRL2_Value   0x00002723//0x000027A3    //测试改为常数累加
+#define DSP_CTRL1_Value   0x000C32C1   //DSP_CTRL1 Register Value 0x03
+#define DSP_CTRL2_Value   0x00002723//0x000027A3    // Test changed to constant accumulation
 
-//#define DSP_CTRL2_Value   0x00002723   //DSP_CTRL2寄存器值   0x04   //BIT13 12 能量桶2 AB通道开关 BIT54 能量桶1 AB通道开关
-//0x00002723 能量桶2 A通道无功累加 能量桶1 A通道有功累加  BIT11-10 能量桶2累加源选择     BIT3-2 能量桶1累加源选择 
-//0x00001713 能量桶2 B通道无功累加 能量桶1 B通道有功累加           0 3:有功 1:无功 2:视在
+//#define DSP_CTRL2_Value   0x00002723   //DSP_CTRL2 Register value 0x04 //BIT13 12 Energy bucket 2 AB channel switch BIT54 Energy bucket 1 AB channel switch
+//0x00002723 Energy bucket 2 A channel reactive power accumulation Energy bucket 1 A channel active power accumulation BIT11-10 Energy bucket 2 accumulation source selection BIT3-2 Energy bucket 1 accumulation source selection 
+//0x00001713 Energy bucket 2 B channel reactive power accumulation Energy bucket 1 B channel active power accumulation 0 3: active power 1: reactive power 2: apparent power
 //******************************************************
 //#define DSP_CTRL2_Value_ChA 0x000027A3
 //#define DSP_CTRL2_Value_ChB 0x000027A3
 #define DSP_CTRL2_Value_ChA 0x00002723
 #define DSP_CTRL2_Value_ChB 0x00001713 
 //******************************************************
-#define DSP_CTRL3_Value   0x00000000   //DSP_CTRL3寄存器值   0x05
-#define DSP_CTRL4_Value   0x00000000   //DSP_CTRL4寄存器值   0x06
-#define DSP_CTRL5_Value   0x00000000   //DSP_CTRL5寄存器值   0x07
-#define SYS_IOCFG0_Value  0X00000000//0x00004080//0x00001C19//0x00004080   //P0，P1,P2，P3输出配置寄存器  CF1 CF2 0x7d  bit7-0   00011001 晶体停中断
-#define SYS_IOCFG1_Value  0x003C3A00  //P5P6配置为DMCK DMDO
-//--------------------------------------------------------------            bit15-8  00011100 掉电中断
-//Dsp_mode=0,1,2时，写入0x806764B6
-//Dsp_mode=3,4,5时，写入0x8049d98F
-//Dsp_mode=6,7时，  写入0x80DD7A8C
-//Dsp_mode=8时，    写入0x82B465F0
+#define DSP_CTRL3_Value   0x00000000   //DSP_CTRL3 Register Value   0x05
+#define DSP_CTRL4_Value   0x00000000   //DSP_CTRL4 Register Value   0x06
+#define DSP_CTRL5_Value   0x00000000   //DSP_CTRL5 Register Value   0x07
+#define SYS_IOCFG0_Value  0X00000000//0x00004080//0x00001C19//0x00004080   //P0，P1,P2，P3 Output Configuration Register  CF1 CF2 0x7d  bit7-0   00011001 晶体停中断
+#define SYS_IOCFG1_Value  0x003C3A00  //P5P6 Configured as DMCK DMDO
+//--------------------------------------------------------------            bit15-8  00011100 Power-off interrupt 
+//Dsp_mode=0,1,2时，Write 0x806764B6
+//Dsp_mode=3,4,5时，Write 0x8049d98F
+//Dsp_mode=6,7时，  Write 0x80DD7A8C
+//Dsp_mode=8时，    Write 0x82B465F0
 //--------------------------------------------------------------
-#define DSP_CFG_BPF_Value 0x806764B6   //DSP_CFG_BPF寄存器值 0x37
+#define DSP_CFG_BPF_Value 0x806764B6   //DSP_CFG_BPFR egister Value 0x37
 
 
 //======================================================================
-#define Actual_BAUDRate 2400     //实际波特率
+#define Actual_BAUDRate 2400     // Actual baud rate
 
-#define BAUDRate_1Byte_OverTime  (float)(11*1000/Actual_BAUDRate*1.4)  //通信超时时间率
+#define BAUDRate_1Byte_OverTime  (float)(11*1000/Actual_BAUDRate*1.4)  //Communication timeout rate
 
 //======================================================================
 
@@ -494,17 +494,17 @@
 //======================================================================
 #define SlaveAddr    0
 
-#define Raccoon_A1H()      {GPIOE->OEN &=~BIT13; GPIOE->IE &=~BIT13; GPIOE->ATT &=~BIT13; IO_DAT( IOE_DAT, 13) = 1;} //推挽输出高
-#define Raccoon_A1L()      {GPIOE->OEN &=~BIT13; GPIOE->IE &=~BIT13; GPIOE->ATT &=~BIT13; IO_DAT( IOE_DAT, 13) = 0;} //推挽输出低
+#define Raccoon_A1H()      {GPIOE->OEN &=~BIT13; GPIOE->IE &=~BIT13; GPIOE->ATT &=~BIT13; IO_DAT( IOE_DAT, 13) = 1;} //Push-pull output high
+#define Raccoon_A1L()      {GPIOE->OEN &=~BIT13; GPIOE->IE &=~BIT13; GPIOE->ATT &=~BIT13; IO_DAT( IOE_DAT, 13) = 0;} //Push-pull output low
 
-#define Raccoon_A0H()      {GPIOE->OEN &=~BIT14; GPIOE->IE &=~BIT14; GPIOE->ATT &=~BIT14; IO_DAT( IOE_DAT, 14) = 1;} //推挽输出高
-#define Raccoon_A0L()      {GPIOE->OEN &=~BIT14; GPIOE->IE &=~BIT14; GPIOE->ATT &=~BIT14; IO_DAT( IOE_DAT, 14) = 0;} //推挽输出低
+#define Raccoon_A0H()      {GPIOE->OEN &=~BIT14; GPIOE->IE &=~BIT14; GPIOE->ATT &=~BIT14; IO_DAT( IOE_DAT, 14) = 1;} //Push-pull output high
+#define Raccoon_A0L()      {GPIOE->OEN &=~BIT14; GPIOE->IE &=~BIT14; GPIOE->ATT &=~BIT14; IO_DAT( IOE_DAT, 14) = 0;} //Push-pull output low
 
 #define Raccoon_SlaveAddrCfg() {Raccoon_A1L();Raccoon_A0L();}
 
 //======================================================================
-#define Raccoon_PwrOn()    {GPIOB->OEN &=~BIT5; GPIOB->IE &=~BIT5; GPIOB->ATT &=~BIT5; IO_DAT( IOB_DAT, 5) = 1;} //推挽输出高
-#define Raccoon_PwrOff()   {GPIOB->OEN &=~BIT5; GPIOB->IE &=~BIT5; GPIOB->ATT &=~BIT5; IO_DAT( IOB_DAT, 5) = 0;} //推挽输出低
+#define Raccoon_PwrOn()    {GPIOB->OEN &=~BIT5; GPIOB->IE &=~BIT5; GPIOB->ATT &=~BIT5; IO_DAT( IOB_DAT, 5) = 1;} //Push-pull output high
+#define Raccoon_PwrOff()   {GPIOB->OEN &=~BIT5; GPIOB->IE &=~BIT5; GPIOB->ATT &=~BIT5; IO_DAT( IOB_DAT, 5) = 0;} //Push-pull output low
 
 
 enum
@@ -527,9 +527,9 @@ typedef struct
 
 RACCOONEXT S_RacCtrl gs_RacCtrl;
 
-RACCOONEXT volatile uint8_t guc_CommDelayTime;         //通讯等待延时
+RACCOONEXT volatile uint8_t guc_CommDelayTime;         //Communication waiting delay
 
-//======================= 应用层定义 ====================================
+//======================= Application layer definition ====================================
 #define DATAP       DSP_DAT_PA1
 #define DATAQ       DSP_DAT_QA1
 #define RMSU        DSP_DAT_RMS1UA
@@ -560,46 +560,46 @@ uint32_t const  RegValue[]=
 
 uint8_t const  RegAddr[]=
 {
-  DSP_ANA0,	//0 模拟控制寄存器0
-  DSP_ANA1,	//1 模拟控制寄存器1
-  DSP_CTRL0,	//2 数字控制寄存器0
-  DSP_CTRL1,	//3 数字控制寄存器1
-  DSP_CTRL2,	//4 数字控制寄存器2
-  DSP_CTRL3,	//5 数字控制寄存器3
-  DSP_CTRL4,	//6 数字控制寄存器4
-  DSP_CTRL5,	//7 数字控制寄存器5
-  DSP_CFG_BPF,	//8 带通滤波器系数寄存器
+  DSP_ANA0,	//0 Analog Control Register 0
+  DSP_ANA1,	//1 Analog Control Registers1
+  DSP_CTRL0,	//2 Digital Control Registers0
+  DSP_CTRL1,	//3 Digital Control Registers1
+  DSP_CTRL2,	//4 Digital Control Registers2
+  DSP_CTRL3,	//5 Digital Control Register 3
+  DSP_CTRL4,	//6 Digital Control Register4
+  DSP_CTRL5,	//7 Digital Control Register5
+  DSP_CFG_BPF,	//Bandpass filter coefficient registers8 
   
-  EGY_PWRTH,	//9 有功门限值寄存器
-  EGY_PROCTH,	//10 起动/潜动判断门限值寄存器
+  EGY_PWRTH,	//9 Active power threshold register
+  EGY_PROCTH,	//10 Start/sleep judgment threshold register
   
-  DSP_CFG_PHC,  //11 角差校正寄存器
-  DSP_CFG_CALI_RMSUA,	//12 全波电压有效值比差寄存器
-  DSP_CFG_CALI_RMSIA,	//13 IA全波电流有效值比差寄存器
-  DSP_CFG_CALI_RMSIB,	//14 IB全波电流有效值比差寄存器
-  DSP_CFG_CALI_PA,	//15 有功功率A比差校正寄存器
-  DSP_CFG_DC_PA,	//16 有功功率A二次补偿寄存器
-  DSP_CFG_DC_QA,	//17 无功功率A二次补偿寄存器
-  DSP_CFG_RMS_DCIA,      //18 电流A有效值小信号校正 ZZP0303
+  DSP_CFG_PHC,  //11 Angle error correction register
+  DSP_CFG_CALI_RMSUA,	//12 Full-wave voltage RMS ratio difference register
+  DSP_CFG_CALI_RMSIA,	//13 IA full-wave current effective value difference register
+  DSP_CFG_CALI_RMSIB,	//14 IB full-wave current effective value difference register
+  DSP_CFG_CALI_PA,	//15 Active power A ratio difference correction register
+  DSP_CFG_DC_PA,	//16  Active power A secondary compensation register
+  DSP_CFG_DC_QA,	//17  Reactive power A secondary compensation register
+  DSP_CFG_RMS_DCIA,      //18 Current A RMS small signal correction ZZP0303
     
-  DSP_CFG_CALI_PB,	//19 有功功率B比差校正寄存器
-  DSP_CFG_DC_PB,	//20 有功功率B二次补偿寄存器
-  DSP_CFG_DC_QB,	//21 无功功率B二次补偿寄存器
-  DSP_CFG_RMS_DCIB,     //22 B路电流有效值小信号校正 zzp0314
+  DSP_CFG_CALI_PB,	//19 Active power B ratio difference correction register
+  DSP_CFG_DC_PB,	//20 Active power B secondary compensation register
+  DSP_CFG_DC_QB,	//21 Reactive power B secondary compensation register
+  DSP_CFG_RMS_DCIB,     //22 B-channel current effective value small signal correction zzp0314
 };
 
 uint8_t const  RMS_RegAddr[]=
 {
-  DATAP,        //第一通道有功功率
-  DATAQ,        //无功功率
-  RMSU,         //电压通道的有效值
-  RMSI1,        //电流通道1的有效值
-  RMSI2,        //电流通道2的有效值
-  FREQ,         //电压频率
-  DATAPB,       //B通道有功zzp0305
-  DATAQB,       //B通道无功
-  DATASA,       //A通道视在
-  DATASB,       //B通道视在zzp0305
+  DATAP,        //Active power of the first channel
+  DATAQ,        //Reactive power
+  RMSU,         //RMS value of voltage channel
+  RMSI1,        //Effective value of current channel 1
+  RMSI2,        //Effective value of current channel 2
+  FREQ,         //Voltage frequency
+  DATAPB,       //BChannel active zzp0305
+  DATAQB,       //BChannel active P0305
+  DATASA,       //AChannel Apparent
+  DATASB,       //BChannel visual zzp0305
 };
 #else
 extern uint8_t const  RegAddr[];
