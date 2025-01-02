@@ -393,11 +393,11 @@
 
   #define DSP_CTRL0_Value   0x01000f07//0x00000F57   //DSP_CTRL0 register value 0x02 50Hz 0x01000F07 0x01000F37 Modified during group pulse test
 //BIT31 Instantaneous power, effective value refresh time 0 20ms 10ms BIT29-28 Average frequency refresh 320ms BIT24 Apparent power calculation source selection 0 Effective value 1 Power value
-//BIT23-20 ����ͨ��ѡ�� 0 ͨ��1�����й�A ͨ��2�����й�B BIT19-18 �޹�����B Aģʽ 0 ȫ���޹� 1����
-//BIT17-13 ȫ������ ����������� ȫ����ѹ ����A B��Чֵ �Ƿ񾭹���ͨ�˲��� 0���� BIT11-10 ƽ����Чֵˢ��ʱ�� 11 640ms 00 40ms
+//BIT23-20 Select 0 channels 1 Kido Kobo Avoles Away 2 Kobo Power B BIT19-18 Non-Powerful Power B Model 0 Full Poor Personal 1 Ki Bo Bo
+//BIT17-13 The full wave power calculation of the base wave data full-wave voltage current A B valid validity value passed through the high-pass filter 0 passed through the BIT11-10 average valid value of 11 640ms 00 40ms
 //BIT9-8 Average power refresh 11 640ms 00 80ms
 //BIT7-4 DSP MODE 6: 3.2M, 64 sampling points per cycle
-//BIT3 0��50Hz 1��60Hz
+//BIT3 0: Frequency 50Hz 1: Frequency 60Hz
 //BIT2 1 0 Voltage Current B Current A channel switch (including adc and dsp)
 //
 #elif ( HZ_CONFIG == FRC_60HZ)
@@ -470,15 +470,15 @@
 #define DSP_CTRL3_Value   0x00000000   //DSP_CTRL3 Register Value   0x05
 #define DSP_CTRL4_Value   0x00000000   //DSP_CTRL4 Register Value   0x06
 #define DSP_CTRL5_Value   0x00000000   //DSP_CTRL5 Register Value   0x07
-#define SYS_IOCFG0_Value  0X00000000//0x00004080//0x00001C19//0x00004080   //P0��P1,P2��P3 Output Configuration Register  CF1 CF2 0x7d  bit7-0   00011001 ����ͣ�ж�
+#define SYS_IOCFG0_Value  0X00000000//0x00004080//0x00001C19//0x00004080   //P0, P1, P2, P3 output configuration register CF1 CF2 0x7D bit7-0 00011001 crystal stop interrupt
 #define SYS_IOCFG1_Value  0x003C3A00  //P5P6 Configured as DMCK DMDO
 //--------------------------------------------------------------            bit15-8  00011100 Power-off interrupt 
-//Dsp_mode=0,1,2ʱ��Write 0x806764B6
-//Dsp_mode=3,4,5ʱ��Write 0x8049d98F
-//Dsp_mode=6,7ʱ��  Write 0x80DD7A8C
-//Dsp_mode=8ʱ��    Write 0x82B465F0
+//Dsp_mode=0,1,2TimeWrite 0x806764B6
+//Dsp_mode=3,4,5TimeWrite 0x8049d98F
+//Dsp_mode=6,7Time  Write 0x80DD7A8C
+//Dsp_mode=8Time    Write 0x82B465F0
 //--------------------------------------------------------------
-#define DSP_CFG_BPF_Value 0x806764B6   //DSP_CFG_BPFR egister Value 0x37
+#define DSP_CFG_BPF_Value 0x806764B6   //DSP_CFG_BPF Register Value 0x37
 
 
 //======================================================================
