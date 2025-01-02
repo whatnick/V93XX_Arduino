@@ -1,13 +1,14 @@
 #ifndef __RACCOON_H__
 #define __RACCOON_H__
 
+#include <stdint.h>
+
 
 #ifndef  RACCOONEXT
     #define RACCOONEXT extern
 #else
     #define RACCOONSELF
 #endif
-
 
 #define	DSP_ANA0	        0x00	//Analog control register	0
 #define	DSP_ANA1	        0X01	//Analog control register	1
@@ -345,7 +346,7 @@
 #define DSP_ANA1_Value    0x00870089 
 //  #define DSP_ANA1_Value    0x00078089
 // 0 PPM  0x00178480 00 01 10When measuring the external crystal oscillator or 8530 providing high frequency, there is no problem with the 4-frequency group pulse
-//bit31-30 adcÊ±ÖÓÆµÂÊ800K  BIT22-21  6.5M is on, BGP is on, BIT18-16 voltage, A channel, B channel adc is on, BIT15 is set to 1 only when using 13M crystal oscillator
+//bit31-30 adcÊ±ï¿½ï¿½Æµï¿½ï¿½800K  BIT22-21  6.5M is on, BGP is on, BIT18-16 voltage, A channel, B channel adc is on, BIT15 is set to 1 only when using 13M crystal oscillator
 // BIT14-12 B-channel current ADC gain 4 times BIT11 voltage ADC gain 4 times A-channel current ADC gain 64 times BIT7 crystal stop detection enable
 //--------------------------------------------------------------
 #elif ( PPM_VALUE == SysCtrl_F10PPM)
@@ -392,11 +393,11 @@
 
   #define DSP_CTRL0_Value   0x01000f07//0x00000F57   //DSP_CTRL0 register value 0x02 50Hz 0x01000F07 0x01000F37 Modified during group pulse test
 //BIT31 Instantaneous power, effective value refresh time 0 20ms 10ms BIT29-28 Average frequency refresh 320ms BIT24 Apparent power calculation source selection 0 Effective value 1 Power value
-//BIT23-20 »ù²¨Í¨µÀÑ¡Ôñ 0 Í¨µÀ1»ù²¨ÓÐ¹¦A Í¨µÀ2»ù²¨ÓÐ¹¦B BIT19-18 ÎÞ¹¦¹¦ÂÊB AÄ£Ê½ 0 È«²¨ÎÞ¹¦ 1»ù²¨
-//BIT17-13 È«²¨¹¦ÂÊ ¼ÆËã»ù²¨Êý¾Ý È«²¨µçÑ¹ µçÁ÷A BÓÐÐ§Öµ ÊÇ·ñ¾­¹ý¸ßÍ¨ÂË²¨Æ÷ 0¾­¹ý BIT11-10 Æ½¾ùÓÐÐ§ÖµË¢ÐÂÊ±¼ä 11 640ms 00 40ms
+//BIT23-20 ï¿½ï¿½ï¿½ï¿½Í¨ï¿½ï¿½Ñ¡ï¿½ï¿½ 0 Í¨ï¿½ï¿½1ï¿½ï¿½ï¿½ï¿½ï¿½Ð¹ï¿½A Í¨ï¿½ï¿½2ï¿½ï¿½ï¿½ï¿½ï¿½Ð¹ï¿½B BIT19-18 ï¿½Þ¹ï¿½ï¿½ï¿½ï¿½ï¿½B AÄ£Ê½ 0 È«ï¿½ï¿½ï¿½Þ¹ï¿½ 1ï¿½ï¿½ï¿½ï¿½
+//BIT17-13 È«ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ È«ï¿½ï¿½ï¿½ï¿½Ñ¹ ï¿½ï¿½ï¿½ï¿½A Bï¿½ï¿½Ð§Öµ ï¿½Ç·ñ¾­¹ï¿½ï¿½ï¿½Í¨ï¿½Ë²ï¿½ï¿½ï¿½ 0ï¿½ï¿½ï¿½ï¿½ BIT11-10 Æ½ï¿½ï¿½ï¿½ï¿½Ð§ÖµË¢ï¿½ï¿½Ê±ï¿½ï¿½ 11 640ms 00 40ms
 //BIT9-8 Average power refresh 11 640ms 00 80ms
 //BIT7-4 DSP MODE 6: 3.2M, 64 sampling points per cycle
-//BIT3 0£º50Hz 1£º60Hz
+//BIT3 0ï¿½ï¿½50Hz 1ï¿½ï¿½60Hz
 //BIT2 1 0 Voltage Current B Current A channel switch (including adc and dsp)
 //
 #elif ( HZ_CONFIG == FRC_60HZ)
@@ -469,13 +470,13 @@
 #define DSP_CTRL3_Value   0x00000000   //DSP_CTRL3 Register Value   0x05
 #define DSP_CTRL4_Value   0x00000000   //DSP_CTRL4 Register Value   0x06
 #define DSP_CTRL5_Value   0x00000000   //DSP_CTRL5 Register Value   0x07
-#define SYS_IOCFG0_Value  0X00000000//0x00004080//0x00001C19//0x00004080   //P0£¬P1,P2£¬P3 Output Configuration Register  CF1 CF2 0x7d  bit7-0   00011001 ¾§ÌåÍ£ÖÐ¶Ï
+#define SYS_IOCFG0_Value  0X00000000//0x00004080//0x00001C19//0x00004080   //P0ï¿½ï¿½P1,P2ï¿½ï¿½P3 Output Configuration Register  CF1 CF2 0x7d  bit7-0   00011001 ï¿½ï¿½ï¿½ï¿½Í£ï¿½Ð¶ï¿½
 #define SYS_IOCFG1_Value  0x003C3A00  //P5P6 Configured as DMCK DMDO
 //--------------------------------------------------------------            bit15-8  00011100 Power-off interrupt 
-//Dsp_mode=0,1,2Ê±£¬Write 0x806764B6
-//Dsp_mode=3,4,5Ê±£¬Write 0x8049d98F
-//Dsp_mode=6,7Ê±£¬  Write 0x80DD7A8C
-//Dsp_mode=8Ê±£¬    Write 0x82B465F0
+//Dsp_mode=0,1,2Ê±ï¿½ï¿½Write 0x806764B6
+//Dsp_mode=3,4,5Ê±ï¿½ï¿½Write 0x8049d98F
+//Dsp_mode=6,7Ê±ï¿½ï¿½  Write 0x80DD7A8C
+//Dsp_mode=8Ê±ï¿½ï¿½    Write 0x82B465F0
 //--------------------------------------------------------------
 #define DSP_CFG_BPF_Value 0x806764B6   //DSP_CFG_BPFR egister Value 0x37
 
@@ -609,29 +610,29 @@ extern uint8_t const  RMS_RegAddr[];
 
 typedef struct
 {
-    uint32  ul_P;
-    uint32  ul_Q;
-    uint32  ul_U;         
-    uint32  ul_I1;    
-    uint32  ul_I2;
-    uint32  ul_Hz;
-    uint32  ul_PB;//zzp0305
-    uint32  ul_QB;
-    uint32  ul_SA;
-    uint32  ul_SB;//zzp0305
+    uint32_t  ul_P;
+    uint32_t  ul_Q;
+    uint32_t  ul_U;         
+    uint32_t  ul_I1;    
+    uint32_t  ul_I2;
+    uint32_t  ul_Hz;
+    uint32_t  ul_PB;//zzp0305
+    uint32_t  ul_QB;
+    uint32_t  ul_SA;
+    uint32_t  ul_SB;//zzp0305
 }S_RMS;
 
 RACCOONEXT S_RMS gs_RmsData;
 
-RACCOONEXT uint8  guc_RmsReadBegian;
-RACCOONEXT uint8  guc_1280msCnt;
+RACCOONEXT uint8_t  guc_RmsReadBegian;
+RACCOONEXT uint8_t  guc_1280msCnt;
 
-RACCOONEXT uint32 Rms_ul_U_Buf[10],Rms_ul_I1_Buf[10];
-RACCOONEXT uint32 Rms_ul_I1_Data[200];
+RACCOONEXT uint32_t Rms_ul_U_Buf[10],Rms_ul_I1_Buf[10];
+RACCOONEXT uint32_t Rms_ul_I1_Data[200];
 
 RACCOONEXT signed long Rms_ul_UC,Rms_ul_I1C;
 RACCOONEXT unsigned long long Rms_ul_USum,Rms_ul_I1Sum;
-RACCOONEXT uint32 Rms_ul_I1Avg,Rms_ul_UAvg;
+RACCOONEXT uint32_t Rms_ul_I1Avg,Rms_ul_UAvg;
 RACCOONEXT double Rms_ul_I1p,Rms_ul_Up;
 RACCOONEXT double Rms_ul_UpxI1p;
 RACCOONEXT uint32_t  tmp_fra, tmp_pack;

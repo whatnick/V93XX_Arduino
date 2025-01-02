@@ -1,6 +1,10 @@
 #define  RACCOONEXT
+
+#include <stdint.h>
+#include <stdbool.h>
 #include "Include.h"
-uint8 cksdis_flag = 0;
+
+uint8_t cksdis_flag = 0;
 /*=========================================================================================\n
 * @function_name: Init_RacCtrl
 * @function_file: Raccoon.c
@@ -40,29 +44,29 @@ void Init_RacCtrl(void)
 ===========================================================================================*/
 void RxReset_Raccoon(void)
 {
-    GPIO_InitType GPIO_InitStruct;
+    //GPIO_InitType GPIO_InitStruct;
 
     //Raccoon_PwrOn();         //Metering chip power IO port control
-    GPIOB->OEN &=~ (BIT5);//iof0 1 Powering the marmot
-    GPIOB->IE  &=~ (BIT5);
-    GPIOB->DAT |= (BIT5);
-    Raccoon_SlaveAddrCfg();  //Device address setting
+    //GPIOB->OEN &=~ (BIT5);//iof0 1 Powering the marmot
+    //GPIOB->IE  &=~ (BIT5);
+    //GPIOB->DAT |= (BIT5);
+    //Raccoon_SlaveAddrCfg();  //Device address setting
     
-    UART_DeInit(UART5);
+    //UART_DeInit(UART5);
     
     /* UART5 TX pin(IOB7), output mode */
-    GPIO_InitStruct.GPIO_Mode = GPIO_Mode_OUTPUT_CMOS;
-    GPIO_InitStruct.GPIO_Pin = GPIO_Pin_7;
-    GPIOBToF_Init(GPIOB, &GPIO_InitStruct);
+    //GPIO_InitStruct.GPIO_Mode = GPIO_Mode_OUTPUT_CMOS;
+    //GPIO_InitStruct.GPIO_Pin = GPIO_Pin_7;
+    //GPIOBToF_Init(GPIOB, &GPIO_InitStruct);
     
-    IO_DAT( IOB_DAT, 7) = 1;
+    //IO_DAT( IOB_DAT, 7) = 1;
     //DelayXms(3);
-    IO_DAT( IOB_DAT, 7) = 0;
+    //IO_DAT( IOB_DAT, 7) = 0;
     
     guc_CommDelayTime = 40;   //The RX pin needs to be continuously low for 70ms to reset the chip. //zzp0219 10->12
     while(guc_CommDelayTime >0);
     
-    IO_DAT( IOB_DAT, 7) = 1;
+    //IO_DAT( IOB_DAT, 7) = 1;
     
     guc_CommDelayTime = 2;   //The RX pin inputs a high level, and the RAM can be freely accessed after 2.15ms.
     while(guc_CommDelayTime >0);
@@ -82,11 +86,12 @@ void RxReset_Raccoon(void)
 ===========================================================================================*/
 void Init_UartRaccoon(void)
 {
-    UART_InitType UART_InitStruct;
-    GPIO_InitType GPIO_InitStruct;
+    //UART_InitType UART_InitStruct;
+    //GPIO_InitType GPIO_InitStruct;
     
   
     /* UART5 RX pin(IOB1), input mode */
+    /**
     GPIO_InitStruct.GPIO_Mode = GPIO_Mode_INPUT;
     GPIO_InitStruct.GPIO_Pin = GPIO_Pin_1;
     GPIOBToF_Init(GPIOB, &GPIO_InitStruct);
@@ -104,6 +109,7 @@ void Init_UartRaccoon(void)
     UART_INTConfig(UART5, UART_INT_RX, ENABLE);
     UART_INTConfig(UART5, UART_INT_TXDONE, ENABLE);
     CORTEX_SetPriority_ClearPending_EnableIRQ(UART5_IRQn, 1); //Enable UART transmit doen/receive interrupt
+     */
 }
 
 /*=========================================================================================\n
@@ -155,7 +161,7 @@ void Raccoon_UartTransmit(void)
   {
      if(gs_RacCtrl.ucSendPoint<gs_RacCtrl.ucSendLen)   
      {
-         UART_SendData( UART5, gs_RacCtrl.ucBuf[gs_RacCtrl.ucSendPoint++]);
+         //UART_SendData( UART5, gs_RacCtrl.ucBuf[gs_RacCtrl.ucSendPoint++]);
      }
      else
      {
@@ -183,7 +189,8 @@ void Raccoon_UartReceive(void)
   {
      if(gs_RacCtrl.ucRevPoint<gs_RacCtrl.ucRevLen)
      {
-         temp = UART_ReceiveData( UART5);
+         //temp = UART_ReceiveData( UART5);
+         temp = 0;
          gs_RacCtrl.ucBuf[gs_RacCtrl.ucRevPoint++] = temp;
          
          if(gs_RacCtrl.ucRevPoint==gs_RacCtrl.ucRevLen)
@@ -205,7 +212,7 @@ void Raccoon_UartReceive(void)
 * @param:addr Write address  
 * control
 * @return:
-* @return: uint8 
+* @return: uint8_t 
 * @Author: lwb (2013-07-04))
 * @Remark:
 *------------------------------------------------------------------------------------------
@@ -281,7 +288,7 @@ uint8_t  WriteRaccoon( uint32_t Data, uint8_t Addr)
 * 
 * @return: 
 *        
-* @return: uint8 
+* @return: uint8_t 
 * @author:   lwb (2013-07-04)
 * @Remark: 
 *-------------------------------------------------------------------------------------------
@@ -298,7 +305,7 @@ uint8_t ReadRaccoon(uint8_t Addr,uint8_t num)
     
 //    gs_RacCtrl.ucBuf[0] = 0xfe;
     gs_RacCtrl.ucBuf[0] = 0x7d;
-    gs_RacCtrl.ucBuf[1] = (uint8_t)(((num -1)<< 4) | ((SlaveAddr) << 2) | RacRead); //num£ºHow many words should be read?
+    gs_RacCtrl.ucBuf[1] = (uint8_t)(((num -1)<< 4) | ((SlaveAddr) << 2) | RacRead); //numï¿½ï¿½How many words should be read?
     gs_RacCtrl.ucBuf[2] = (uint8_t)(Addr&0x007f);   //Register address  Bit[6:0]
     Raccoon_Cmd1 = gs_RacCtrl.ucBuf[1];
     Raccoon_Cmd2 = gs_RacCtrl.ucBuf[2];
@@ -426,12 +433,12 @@ void BroadcastWriteRaccoon(uint32_t Data,uint8_t Addr)
 ===========================================================================================*/
 void Raccoon_UpdatePar(void)
 {
-    uint8 i,tmp;
-    uint32 ucSum,RacReg_buf;
+    uint8_t i,tmp;
+    uint32_t ucSum,RacReg_buf;
     
     ucSum = 0;
     //testshow = 0x22222;
-    for( i = 0; i < (sizeof(RegAddr)/sizeof(uint8)); i++)
+    for( i = 0; i < (sizeof(RegAddr)/sizeof(uint8_t)); i++)
     {
         if(i < 9)   //control
         {
@@ -465,11 +472,11 @@ void Raccoon_UpdatePar(void)
         {
             if(i<19)
             {
-              RacReg_buf = (uint32)*((&gs_JbPm.ul_EGYTH) + i - 9);
+              RacReg_buf = (uint32_t)*((&gs_JbPm.ul_EGYTH) + i - 9);
             }
             else // after i>18, RegAddr[i] corresponds to &gs_JbPm.ul_EGYTH) + i - 5
             {
-              RacReg_buf = (uint32)*((&gs_JbPm.ul_EGYTH) + i - 5);
+              RacReg_buf = (uint32_t)*((&gs_JbPm.ul_EGYTH) + i - 5);
             }
             
             if(i == 15)  //power
@@ -525,7 +532,7 @@ void Raccoon_UpdatePar(void)
         }
     }
     
-    ucSum = 0xFFFFFFFF-ucSum;    //Checksum register DSP_CFG_CKSUM  0x0~0x7£¬0x25~0x3a£¬0x55~0x60
+    ucSum = 0xFFFFFFFF-ucSum;    //Checksum register DSP_CFG_CKSUM  0x0~0x7ï¿½ï¿½0x25~0x3aï¿½ï¿½0x55~0x60
     tmp = WriteRaccoon( ucSum, DSP_CFG_CKSUM);
 //    if(tmp ==false)
 //    {
@@ -579,7 +586,7 @@ void Raccoon_ReadRMS(void)
   ReadRmsErrFlg = 0;
   pRmsData = (uint32_t *)&gs_RmsData;
   
-  for( i = 0; i < (sizeof(RMS_RegAddr)/sizeof(uint8)); i++)
+  for( i = 0; i < (sizeof(RMS_RegAddr)/sizeof(uint8_t)); i++)
   {
     if( ReadRaccoon( RMS_RegAddr[i], 1))
     {
@@ -596,7 +603,7 @@ void Raccoon_ReadRMS(void)
             {
               Buf_RMS.ul_P = ~Buf_RMS.ul_P+1;
             }
-            if((float)Buf_RMS.ul_P/gs_JbPm.ul_PG < (((float)(gs_JbPm.ui_Ib/1000)*(gs_JbPm.ui_Un/100))*1.5/1000))//Rated 1.5¡ë 1.1W(0.1%) *1.5
+            if((float)Buf_RMS.ul_P/gs_JbPm.ul_PG < (((float)(gs_JbPm.ui_Ib/1000)*(gs_JbPm.ui_Un/100))*1.5/1000))//Rated 1.5ï¿½ï¿½ 1.1W(0.1%) *1.5
             {
               gs_power_energycal.ul_power[0] = 0;
 //              gs_power_energycal.ul_power[0] = 0x1234567;
@@ -613,7 +620,7 @@ void Raccoon_ReadRMS(void)
             {
               Buf_RMS.ul_Q = ~Buf_RMS.ul_Q+1;
             }
-            if((float)Buf_RMS.ul_Q/gs_JbPm.ul_PG < (((float)(gs_JbPm.ui_Ib/1000)*(gs_JbPm.ui_Un/100))*1.5/1000))//Rated 1.5¡ë 1.1W(0.1%) *1.5
+            if((float)Buf_RMS.ul_Q/gs_JbPm.ul_PG < (((float)(gs_JbPm.ui_Ib/1000)*(gs_JbPm.ui_Un/100))*1.5/1000))//Rated 1.5ï¿½ï¿½ 1.1W(0.1%) *1.5
             {
               gs_power_energycal.ul_Npower[0] = 0;
 //              gs_power_energycal.ul_Npower[0] = 0x1234567;
@@ -635,7 +642,7 @@ void Raccoon_ReadRMS(void)
               {
                 Buf_RMS.ul_PB = ~Buf_RMS.ul_PB+1;
               }
-              if((float)Buf_RMS.ul_PB/gs_JbPm.ul_PG < (((float)(gs_JbPm.ui_Ib/1000)*(gs_JbPm.ui_Un/100))*1.5/1000))//Rated 1.5¡ë 1.1W(0.1%) *1.5
+              if((float)Buf_RMS.ul_PB/gs_JbPm.ul_PG < (((float)(gs_JbPm.ui_Ib/1000)*(gs_JbPm.ui_Un/100))*1.5/1000))//Rated 1.5ï¿½ï¿½ 1.1W(0.1%) *1.5
               {
                 gs_power_energycal.ul_power[0] = 0;
 //                gs_power_energycal.ul_power[0] = 0x1234567;
@@ -652,7 +659,7 @@ void Raccoon_ReadRMS(void)
               {
                 Buf_RMS.ul_QB = ~Buf_RMS.ul_QB+1;
               }
-              if((float)Buf_RMS.ul_QB/gs_JbPm.ul_PG < (((float)(gs_JbPm.ui_Ib/1000)*(gs_JbPm.ui_Un/100))*1.5/1000))//Rated 1.5¡ë 1.1W(0.1%) *1.5
+              if((float)Buf_RMS.ul_QB/gs_JbPm.ul_PG < (((float)(gs_JbPm.ui_Ib/1000)*(gs_JbPm.ui_Un/100))*1.5/1000))//Rated 1.5ï¿½ï¿½ 1.1W(0.1%) *1.5
               {
                 gs_power_energycal.ul_Npower[0] = 0;
 //                gs_power_energycal.ul_Npower[0] = 0X1234567;
@@ -841,7 +848,7 @@ void Raccoon_RunCheck(void)
 //**Input Parameters : None
 //**Output Parameters: None
 //**return           : None
-//**Description      £ºTMR1 initialization
+//**Description      ï¿½ï¿½TMR1 initialization
 //-----------------------------------------------------------------
 void Raccoon_TMR1_Init(void)
 {
@@ -864,7 +871,7 @@ void Raccoon_TMR1_Init(void)
 //**Input Parameters : None
 //**Output Parameters: None
 //**return           : None
-//**Description      £ºEXTI5 initialization
+//**Description      ï¿½ï¿½EXTI5 initialization
 //-----------------------------------------------------------------
 void Raccoon_EXTI5_Init(void)
 {
@@ -880,7 +887,7 @@ void Raccoon_EXTI5_Init(void)
 //**Input Parameters : None
 //**Output Parameters: None
 //**return           : None
-//**Description      £ºSend CF pulse light
+//**Description      ï¿½ï¿½Send CF pulse light
 //-----------------------------------------------------------------
 void Raccoon_CFCtrl(void)
 {
@@ -904,16 +911,16 @@ void Raccoon_CFCtrl(void)
 
 void Raccoon_UpdateChecksum(void)
 {
-  static uint32 sum = 0,Rbuf;
-  uint8 i;
+  static uint32_t sum = 0,Rbuf;
+  uint8_t i;
   for(i = 0;i<42;i++)
   {
     if(i<8)//0-7
     {
        ReadRaccoon(i,1);
-       for(uint8 j=4;j>0;j--)
+       for(uint8_t j=4;j>0;j--)
        {
-          Rbuf += (uint32)gs_RacCtrl.ucBuf[j-1]<<8*(j-1);
+          Rbuf += (uint32_t)gs_RacCtrl.ucBuf[j-1]<<8*(j-1);
        }
       sum += Rbuf; 
       Rbuf = 0;
@@ -921,9 +928,9 @@ void Raccoon_UpdateChecksum(void)
     if(i>7&&i<30&&i!=27)//0x25-0x30
     {
        ReadRaccoon(i+29,1);
-       for(uint8 j=4;j>0;j--)
+       for(uint8_t j=4;j>0;j--)
        {
-          Rbuf += (uint32)gs_RacCtrl.ucBuf[j-1]<<8*(j-1);
+          Rbuf += (uint32_t)gs_RacCtrl.ucBuf[j-1]<<8*(j-1);
        }
       sum += Rbuf; 
       Rbuf = 0;
@@ -931,9 +938,9 @@ void Raccoon_UpdateChecksum(void)
     if(i>29&&i<42)//0x55-0x60
     {
        ReadRaccoon(i+55,1);
-       for(uint8 j=4;j>0;j--)
+       for(uint8_t j=4;j>0;j--)
        {
-       Rbuf += (uint32)gs_RacCtrl.ucBuf[j-1]<<8*(j-1);
+       Rbuf += (uint32_t)gs_RacCtrl.ucBuf[j-1]<<8*(j-1);
        }
       sum += Rbuf; 
       Rbuf = 0;
@@ -950,14 +957,14 @@ void Raccoon_UpdateChecksum(void)
 
 void DMA_DataUpload(void)
 {
-  SPI_Cmd(SPI2,ENABLE);
-  SPI_SmartModeCmd(SPI2, ENABLE);
-  DMA_StopTransmit(DMA_CHANNEL_0, DISABLE); //Clear stop
-  DMA_Cmd(DMA_CHANNEL_0, ENABLE);
+  //SPI_Cmd(SPI2,ENABLE);
+  //SPI_SmartModeCmd(SPI2, ENABLE);
+  //DMA_StopTransmit(DMA_CHANNEL_0, DISABLE); //Clear stop
+  //DMA_Cmd(DMA_CHANNEL_0, ENABLE);
   Delay_ms(300);
   WriteRaccoon(0x000F0208, DSP_CTRL5); 
   Delay_ms(200);
-  tmp_fra = DMA_GetFrameLenTransferred(DMA_CHANNEL_0);
-  tmp_pack = DMA_GetPackLenTransferred(DMA_CHANNEL_0);
-  DMA_StopTransmit(DMA_CHANNEL_0, ENABLE); //Set stop, clear frame/package counters 
+  //tmp_fra = DMA_GetFrameLenTransferred(DMA_CHANNEL_0);
+  //tmp_pack = DMA_GetPackLenTransferred(DMA_CHANNEL_0);
+  //DMA_StopTransmit(DMA_CHANNEL_0, ENABLE); //Set stop, clear frame/package counters 
 }
