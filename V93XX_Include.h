@@ -1,5 +1,5 @@
-#ifndef _INCLUDE_H_
-#define _INCLUDE_H_
+#ifndef _V93XX_INCLUDE_H_
+#define _V93XX_INCLUDE_H_
 
 #ifndef VAREXT
     #define VAREXT extern
@@ -10,6 +10,10 @@
 #include "stdlib.h"	
 #include "math.h"
 #include "Raccoon.h"
+
+/*** Host hardware definitions for multiple Arduinos variants as appropriate could be overriden in .ino */
+#define RX_V93XX 15
+#define TX_V93XX 16
 
 VAREXT uint8_t data[1000];
 VAREXT uint32_t temp_buf[1000];

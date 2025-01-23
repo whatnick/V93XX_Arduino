@@ -2,7 +2,9 @@
 
 #include <stdint.h>
 #include <stdbool.h>
-#include "Include.h"
+#include <Arduino.h>
+#include <HardwareSerial.h>
+#include "V93XX_Include.h"
 
 uint8_t cksdis_flag = 0;
 /*=========================================================================================\n
@@ -26,7 +28,8 @@ void Init_RacCtrl(void)
     gs_RacCtrl.ucRevPoint=0;
     gs_RacCtrl.ucStatus=Rac_Idle;
     
-    MemSet((uint8_t *)&gs_RmsData, 0, sizeof( gs_RmsData)); //Clear the effective value variable to 0
+    //MemSet((uint8_t *)&gs_RmsData, 0, sizeof( gs_RmsData)); //Clear the effective value variable to 0
+    memset((uint8_t *)&gs_RmsData, 0, sizeof( gs_RmsData));
 }
 
 /*=========================================================================================\n
@@ -58,18 +61,28 @@ void RxReset_Raccoon(void)
     //GPIO_InitStruct.GPIO_Mode = GPIO_Mode_OUTPUT_CMOS;
     //GPIO_InitStruct.GPIO_Pin = GPIO_Pin_7;
     //GPIOBToF_Init(GPIOB, &GPIO_InitStruct);
+    pinMode(TX_V93XX, OUTPUT);
     
     //IO_DAT( IOB_DAT, 7) = 1;
     //DelayXms(3);
     //IO_DAT( IOB_DAT, 7) = 0;
+
+    //TX pin for UART , RX pin for ASIC need to be held low
+    digitalWrite(TX_V93XX, HIGH);
+    delayMicroseconds(3000);
+    digitalWrite(TX_V93XX, LOW);
     
-    guc_CommDelayTime = 40;   //The RX pin needs to be continuously low for 70ms to reset the chip. //zzp0219 10->12
-    while(guc_CommDelayTime >0);
-    
+    //TODO: This looks like an interrupt based non-blocking delay, have to implement something similar
+    //guc_CommDelayTime = 40;   //The RX pin needs to be continuously low for 70ms to reset the chip. //zzp0219 10->12
+    //while(guc_CommDelayTime >0);
+    delayMicroseconds(70000);
     //IO_DAT( IOB_DAT, 7) = 1;
+    digitalWrite(TX_V93XX, HIGH);
     
-    guc_CommDelayTime = 2;   //The RX pin inputs a high level, and the RAM can be freely accessed after 2.15ms.
-    while(guc_CommDelayTime >0);
+    //TODO: This looks like an interrupt based non-blocking delay, have to implement something similar
+    //guc_CommDelayTime = 2;   //The RX pin inputs a high level, and the RAM can be freely accessed after 2.15ms.
+    //while(guc_CommDelayTime >0);
+    delayMicroseconds(21500);
 }
 /*=========================================================================================\n
 * @function_name: Init_UartRaccoon
@@ -110,6 +123,7 @@ void Init_UartRaccoon(void)
     UART_INTConfig(UART5, UART_INT_TXDONE, ENABLE);
     CORTEX_SetPriority_ClearPending_EnableIRQ(UART5_IRQn, 1); //Enable UART transmit doen/receive interrupt
      */
+    Serial1.begin(4800, SERIAL_8O1, RX_V93XX, TX_V93XX);
 }
 
 /*=========================================================================================\n
@@ -162,6 +176,7 @@ void Raccoon_UartTransmit(void)
      if(gs_RacCtrl.ucSendPoint<gs_RacCtrl.ucSendLen)   
      {
          //UART_SendData( UART5, gs_RacCtrl.ucBuf[gs_RacCtrl.ucSendPoint++]);
+         Serial1.write(gs_RacCtrl.ucBuf[gs_RacCtrl.ucSendPoint++]);
      }
      else
      {
@@ -190,7 +205,7 @@ void Raccoon_UartReceive(void)
      if(gs_RacCtrl.ucRevPoint<gs_RacCtrl.ucRevLen)
      {
          //temp = UART_ReceiveData( UART5);
-         temp = 0;
+         temp = Serial1.read();
          gs_RacCtrl.ucBuf[gs_RacCtrl.ucRevPoint++] = temp;
          
          if(gs_RacCtrl.ucRevPoint==gs_RacCtrl.ucRevLen)
@@ -252,7 +267,7 @@ uint8_t  WriteRaccoon( uint32_t Data, uint8_t Addr)
     guc_CommDelayTime = (uint8_t)((BAUDRate_1Byte_OverTime * 9 +10)/10)+1;//Send 8 bytes, receive 1 byte Unit: 10ms
     while(gs_RacCtrl.ucStatus!=Rac_WaitPro)
     {
-        ClearWDT();	//Feed the Dog
+        //ClearWDT();	//Feed the Dog
         if((guc_CommDelayTime==0))
         {
           
@@ -267,7 +282,7 @@ uint8_t  WriteRaccoon( uint32_t Data, uint8_t Addr)
             return false;                   //If timeout  
         }
     }
-    DelayXms(6);
+    //DelayXms(6);
     if(gs_RacCtrl.ucBuf[0]==ucSum)
     {
         return true;
@@ -330,7 +345,7 @@ uint8_t ReadRaccoon(uint8_t Addr,uint8_t num)
     Raccoon_UartTransmit();
     while(gs_RacCtrl.ucStatus!=Rac_WaitPro)
     {
-        ClearWDT();	//Feed the Dog
+        //ClearWDT();	//Feed the Dog
         if((guc_CommDelayTime==0))
         {
             
@@ -352,7 +367,7 @@ uint8_t ReadRaccoon(uint8_t Addr,uint8_t num)
     
     ucSum=~ucSum;
     ucSum+=0x33;
-    DelayXms(6);
+    //DelayXms(6);
     if(gs_RacCtrl.ucBuf[num*4]==ucSum)
     {
         return true;
@@ -414,7 +429,7 @@ void BroadcastWriteRaccoon(uint32_t Data,uint8_t Addr)
     guc_CommDelayTime = (uint8_t)((BAUDRate_1Byte_OverTime * 8 +10)/10);//Send 8 bytes, receive 0 bytes Unit: 10ms
     while(guc_CommDelayTime>0)
     {
-      ClearWDT();	//Feed the Dog
+      //ClearWDT();	//Feed the Dog
     }   
 }
 
@@ -458,7 +473,7 @@ void Raccoon_UpdatePar(void)
              RacReg_buf = RegValue[i]; 
             }
             
-            CLRWDT();
+            //CLRWDT();
 
             tmp = WriteRaccoon( RacReg_buf, RegAddr[i]);
 
@@ -466,7 +481,7 @@ void Raccoon_UpdatePar(void)
 //            {
 //              WriteRaccoon( RacReg_buf, RegAddr[i]);
 //            }
-            CLRWDT(); 
+            //CLRWDT(); 
             ucSum += RacReg_buf;
         }else
         {
@@ -481,13 +496,13 @@ void Raccoon_UpdatePar(void)
             
             if(i == 15)  //power
             {
-                CLRWDT();
+                //CLRWDT();
                 tmp = WriteRaccoon( RacReg_buf, RegAddr[i]);
 //                if(tmp ==false)
 //                {
 //                  WriteRaccoon( RacReg_buf, RegAddr[i]);
 //                }
-                CLRWDT(); 
+                //CLRWDT(); 
                 ucSum += RacReg_buf;
                 
                 tmp = WriteRaccoon(RacReg_buf, DSP_CFG_CALI_QA);  //Reactive power ratio difference = Active power ratio difference
@@ -495,18 +510,18 @@ void Raccoon_UpdatePar(void)
 //                {
 //                  WriteRaccoon( RacReg_buf, DSP_CFG_CALI_QA);
 //                }
-                CLRWDT();
+                //CLRWDT();
                 ucSum += RacReg_buf;
             }
             else if(i == 19)
             {
-              CLRWDT();
+              //CLRWDT();
                 tmp = WriteRaccoon( RacReg_buf, RegAddr[i]);
 //                if(tmp ==false)
 //                {
 //                  WriteRaccoon( RacReg_buf, RegAddr[i]);
 //                }
-                CLRWDT(); 
+                //CLRWDT(); 
                 ucSum += RacReg_buf;
                 
                 tmp = WriteRaccoon(RacReg_buf, DSP_CFG_CALI_QB);  //Reactive power ratio difference = Active power ratio difference
@@ -514,19 +529,19 @@ void Raccoon_UpdatePar(void)
 //                {
 //                  WriteRaccoon( RacReg_buf, DSP_CFG_CALI_QB);
 //                }
-                CLRWDT();
+                //CLRWDT();
                 ucSum += RacReg_buf;
             }
             
             else  //Threshold and Calibration
             {
-                CLRWDT();  
+                //CLRWDT();  
                 tmp = WriteRaccoon( RacReg_buf, RegAddr[i]);
 //                if(tmp ==false)
 //                {
 //                  WriteRaccoon( RacReg_buf, RegAddr[i]);
 //                }
-                CLRWDT(); 
+                //CLRWDT(); 
                 ucSum += RacReg_buf;
             }
         }
@@ -538,20 +553,20 @@ void Raccoon_UpdatePar(void)
 //    {
 //      WriteRaccoon( ucSum, DSP_CFG_CKSUM);
 //    }
-    CLRWDT(); 
+    //CLRWDT(); 
     
     tmp = WriteRaccoon( SYS_IOCFG0_Value, SYS_IOCFG0); //IO port configuration
 //    if(tmp ==false)
 //    {
 //      WriteRaccoon( SYS_IOCFG0_Value, SYS_IOCFG0);
 //    }
-    CLRWDT(); 
+    //CLRWDT(); 
     tmp = WriteRaccoon( SYS_IOCFG1_Value, SYS_IOCFG1); //IO port configuration
 //    if(tmp ==false)
 //    {
 //      WriteRaccoon( SYS_IOCFG1_Value, SYS_IOCFG1);
 //    }
-    CLRWDT(); 
+    //CLRWDT(); 
     
     
     WriteRaccoon(0x00000018, 0x75); //chksum Wrong not to close cf
@@ -590,7 +605,8 @@ void Raccoon_ReadRMS(void)
   {
     if( ReadRaccoon( RMS_RegAddr[i], 1))
     {
-        MemCpy((uint8_t *)pRmsData, gs_RacCtrl.ucBuf, 4);//zzp0113
+        //MemCpy((uint8_t *)pRmsData, gs_RacCtrl.ucBuf, 4);//zzp0113
+        memcpy((uint8_t *)pRmsData, gs_RacCtrl.ucBuf, 4);
         
         pRmsData++;
 //******************************************************************************
@@ -961,9 +977,11 @@ void DMA_DataUpload(void)
   //SPI_SmartModeCmd(SPI2, ENABLE);
   //DMA_StopTransmit(DMA_CHANNEL_0, DISABLE); //Clear stop
   //DMA_Cmd(DMA_CHANNEL_0, ENABLE);
-  Delay_ms(300);
+  //Delay_ms(300);
+  delayMicroseconds(300000);
   WriteRaccoon(0x000F0208, DSP_CTRL5); 
-  Delay_ms(200);
+  //Delay_ms(200);
+  delayMicroseconds(200000);
   //tmp_fra = DMA_GetFrameLenTransferred(DMA_CHANNEL_0);
   //tmp_pack = DMA_GetPackLenTransferred(DMA_CHANNEL_0);
   //DMA_StopTransmit(DMA_CHANNEL_0, ENABLE); //Set stop, clear frame/package counters 
