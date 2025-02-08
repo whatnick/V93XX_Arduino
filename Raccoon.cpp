@@ -171,11 +171,10 @@ void Raccoon_Delay(uint8_t n)//zzp0113
 ===========================================================================================*/
 void Raccoon_UartTransmit(void)
 {
-  if(gs_RacCtrl.ucStatus==Rac_Send)
+  while(gs_RacCtrl.ucStatus==Rac_Send)
   {
      if(gs_RacCtrl.ucSendPoint<gs_RacCtrl.ucSendLen)   
      {
-         //UART_SendData( UART5, gs_RacCtrl.ucBuf[gs_RacCtrl.ucSendPoint++]);
          Serial1.write(gs_RacCtrl.ucBuf[gs_RacCtrl.ucSendPoint++]);
      }
      else
@@ -200,11 +199,10 @@ void Raccoon_UartTransmit(void)
 void Raccoon_UartReceive(void)
 {
   uint8_t temp;
-  if(gs_RacCtrl.ucStatus==Rac_Rev)
+  while(gs_RacCtrl.ucStatus==Rac_Rev)
   {
      if(gs_RacCtrl.ucRevPoint<gs_RacCtrl.ucRevLen)
      {
-         //temp = UART_ReceiveData( UART5);
          temp = Serial1.read();
          gs_RacCtrl.ucBuf[gs_RacCtrl.ucRevPoint++] = temp;
          
@@ -275,7 +273,7 @@ uint8_t  WriteRaccoon( uint32_t Data, uint8_t Addr)
 //            gs_LcdDisp.ulNum1Msk = 0;
 //            Disp_Numb(gs_LcdDisp.ulNum1, gs_LcdDisp.ulNum1Msk);
 //            LCD_RAMUpdata();
-          cksdis_flag += 1;
+            cksdis_flag += 1;
           
           
             //MemSet((uint8_t *)&gs_RmsData, 0x5555, sizeof( gs_RmsData)); //zzp0124
@@ -283,6 +281,7 @@ uint8_t  WriteRaccoon( uint32_t Data, uint8_t Addr)
         }
     }
     //DelayXms(6);
+    delayMicroseconds(6000);
     if(gs_RacCtrl.ucBuf[0]==ucSum)
     {
         return true;
@@ -343,22 +342,18 @@ uint8_t ReadRaccoon(uint8_t Addr,uint8_t num)
 //    guc_CommDelayTime=17;
     guc_CommDelayTime = (uint8_t)((BAUDRate_1Byte_OverTime * (4*num+5) +10)/10)+1;//Send 4 bytes, receive 4*N+1 bytes Unit: 10ms
     Raccoon_UartTransmit();
-    while(gs_RacCtrl.ucStatus!=Rac_WaitPro)
-    {
+    delayMicroseconds(8000);
+    // This delay loop is useful if using interrupts with UART on receive
+    //while(gs_RacCtrl.ucStatus!=Rac_WaitPro)
+    //{
         //ClearWDT();	//Feed the Dog
-        if((guc_CommDelayTime==0))
-        {
-            
-//            gs_LcdDisp.ulNum1 = 0x22222222;
-//            gs_LcdDisp.ulNum1Msk = 0;
-//            Disp_Numb(gs_LcdDisp.ulNum1, gs_LcdDisp.ulNum1Msk);
-//            LCD_RAMUpdata();
-          cksdis_flag += 2;
-          
-            //MemSet((uint8_t *)&gs_RmsData, 0x1111, sizeof( gs_RmsData)); //zzp0124
-            return false;           //If timeout
-        }
-    }
+    //    if((guc_CommDelayTime==0))
+    //    {
+    //      cksdis_flag += 2;
+    //      return false;           //If timeout
+    //    }
+    //}
+    Raccoon_UartReceive();
     ucSum = Raccoon_Cmd1+Raccoon_Cmd2;
     for(i=0;i<(num*4);i++)               //Read no more than 255 bytes
     {
@@ -367,7 +362,7 @@ uint8_t ReadRaccoon(uint8_t Addr,uint8_t num)
     
     ucSum=~ucSum;
     ucSum+=0x33;
-    //DelayXms(6);
+    delayMicroseconds(6000);
     if(gs_RacCtrl.ucBuf[num*4]==ucSum)
     {
         return true;
@@ -842,22 +837,22 @@ void Raccoon_ReadRMS(void)
 ===========================================================================================*/
 void Raccoon_RunCheck(void)
 {
-//  uint8_t ucbuf[4];
-//  if( ReadRaccoon( SYS_INTSTS, 1))
-//  {
-//    //MemCpy( ucbuf, gs_RacCtrl.ucBuf+3, 4);
-//    MemCpy( ucbuf, gs_RacCtrl.ucBuf, 4);//zzp0114
-//    
-//    if((ucbuf[1] & BIT6) == BIT6)           //Checksum Error bit14
-//    {
-//      
-//      MemSet((uint8_t *)&gs_RmsData, 0, sizeof( gs_RmsData)); //Clear the effective value variable to 0
-//      RxReset_Raccoon();
-//      Init_UartRaccoon();         //Metering serial port initialization
-//      Raccoon_UpdatePar();        //Metering parameter refresh
-//      WriteRaccoon(0x00004000,0x72);//zzp0116
-//    }      
-//  }
+  uint8_t ucbuf[4];
+  if( ReadRaccoon( SYS_INTSTS, 1))
+  {
+    //MemCpy( ucbuf, gs_RacCtrl.ucBuf+3, 4);
+    memcpy( ucbuf, gs_RacCtrl.ucBuf, 4);//zzp0114
+    
+    if((ucbuf[1] & BIT6) == BIT6)           //Checksum Error bit14
+    {
+      
+      memset((uint8_t *)&gs_RmsData, 0, sizeof( gs_RmsData)); //Clear the effective value variable to 0
+      RxReset_Raccoon();
+      Init_UartRaccoon();         //Metering serial port initialization
+//    Raccoon_UpdatePar();        //Metering parameter refresh
+      WriteRaccoon(0x00004000,0x72);//zzp0116
+    }      
+  }
 }
 //----------------------------Function Info -----------------------
 //**Function Name    : Raccoon_TMR1_Init
