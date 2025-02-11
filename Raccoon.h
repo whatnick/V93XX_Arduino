@@ -638,6 +638,7 @@ RACCOONEXT double Rms_ul_UpxI1p;
 RACCOONEXT uint32_t  tmp_fra, tmp_pack;
 
 //======================================================================
+void Init_Para(void);
 void Init_RacCtrl(void);
 void RxReset_Raccoon(void);
 void Init_UartRaccoon(void);
