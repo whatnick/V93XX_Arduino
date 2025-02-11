@@ -263,25 +263,19 @@ uint8_t  WriteRaccoon( uint32_t Data, uint8_t Addr)
     Raccoon_UartTransmit();                    //Start Sending
 //    guc_CommDelayTime=7;
     guc_CommDelayTime = (uint8_t)((BAUDRate_1Byte_OverTime * 9 +10)/10)+1;//Send 8 bytes, receive 1 byte Unit: 10ms
-    while(gs_RacCtrl.ucStatus!=Rac_WaitPro)
-    {
-        //ClearWDT();	//Feed the Dog
-        if((guc_CommDelayTime==0))
-        {
-          
-//            gs_LcdDisp.ulNum1 = testshow;
-//            gs_LcdDisp.ulNum1Msk = 0;
-//            Disp_Numb(gs_LcdDisp.ulNum1, gs_LcdDisp.ulNum1Msk);
-//            LCD_RAMUpdata();
-            cksdis_flag += 1;
-          
-          
-            //MemSet((uint8_t *)&gs_RmsData, 0x5555, sizeof( gs_RmsData)); //zzp0124
-            return false;                   //If timeout  
-        }
-    }
+    // Only relevant if receiving via interrupts
+    //while(gs_RacCtrl.ucStatus!=Rac_WaitPro)
+    //{
+    //    //ClearWDT();	//Feed the Dog
+    //    if((guc_CommDelayTime==0))
+    //    {
+    //        cksdis_flag += 1;
+    //        return false;                   //If timeout  
+    //    }
+    //}
     //DelayXms(6);
     delayMicroseconds(6000);
+    Raccoon_UartReceive();
     if(gs_RacCtrl.ucBuf[0]==ucSum)
     {
         return true;
