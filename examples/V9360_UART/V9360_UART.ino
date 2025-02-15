@@ -22,5 +22,11 @@ void setup()
 void loop()
 {
 	Raccoon_ReadRMS();
+	Serial.printf("Voltage_P: %d\n",gs_RmsData.ul_P);
+	Serial.printf("Voltage_Q: %d\n",gs_RmsData.ul_Q);
+	Serial.printf("Voltage_RMS: %d\n",gs_RmsData.ul_U);
+	Serial.printf("Current 1: %d\n",gs_RmsData.ul_I1);
+	Serial.printf("Current 2: %d\n",gs_RmsData.ul_I2);
+	Serial.printf("Frequency: %d\n",gs_RmsData.ul_Hz);
 	sleep(1);
 }

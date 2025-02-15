@@ -487,16 +487,9 @@ void Raccoon_UpdatePar(void)
             {
              RacReg_buf = RegValue[i]; 
             }
-            
-            //CLRWDT();
 
             tmp = WriteRaccoon( RacReg_buf, RegAddr[i]);
-
-//            if(tmp ==false)
-//            {
-//              WriteRaccoon( RacReg_buf, RegAddr[i]);
-//            }
-            //CLRWDT(); 
+            //TODO: If first write fails retry 
             ucSum += RacReg_buf;
         }else
         {
@@ -511,52 +504,30 @@ void Raccoon_UpdatePar(void)
             
             if(i == 15)  //power
             {
-                //CLRWDT();
+
                 tmp = WriteRaccoon( RacReg_buf, RegAddr[i]);
-//                if(tmp ==false)
-//                {
-//                  WriteRaccoon( RacReg_buf, RegAddr[i]);
-//                }
-                //CLRWDT(); 
+                
                 ucSum += RacReg_buf;
                 
                 tmp = WriteRaccoon(RacReg_buf, DSP_CFG_CALI_QA);  //Reactive power ratio difference = Active power ratio difference
-//                if(tmp ==false)
-//                {
-//                  WriteRaccoon( RacReg_buf, DSP_CFG_CALI_QA);
-//                }
-                //CLRWDT();
+                //TODO: If first write fails retry 
                 ucSum += RacReg_buf;
             }
             else if(i == 19)
             {
-              //CLRWDT();
                 tmp = WriteRaccoon( RacReg_buf, RegAddr[i]);
-//                if(tmp ==false)
-//                {
-//                  WriteRaccoon( RacReg_buf, RegAddr[i]);
-//                }
-                //CLRWDT(); 
+                
                 ucSum += RacReg_buf;
                 
                 tmp = WriteRaccoon(RacReg_buf, DSP_CFG_CALI_QB);  //Reactive power ratio difference = Active power ratio difference
-//                if(tmp ==false)
-//                {
-//                  WriteRaccoon( RacReg_buf, DSP_CFG_CALI_QB);
-//                }
-                //CLRWDT();
+                //TODO: If first write fails retry 
                 ucSum += RacReg_buf;
             }
             
             else  //Threshold and Calibration
             {
-                //CLRWDT();  
                 tmp = WriteRaccoon( RacReg_buf, RegAddr[i]);
-//                if(tmp ==false)
-//                {
-//                  WriteRaccoon( RacReg_buf, RegAddr[i]);
-//                }
-                //CLRWDT(); 
+                //TODO: If first write fails retry 
                 ucSum += RacReg_buf;
             }
         }
@@ -564,30 +535,17 @@ void Raccoon_UpdatePar(void)
     
     ucSum = 0xFFFFFFFF-ucSum;    //Checksum register DSP_CFG_CKSUM  0x0~0x7��0x25~0x3a��0x55~0x60
     tmp = WriteRaccoon( ucSum, DSP_CFG_CKSUM);
-//    if(tmp ==false)
-//    {
-//      WriteRaccoon( ucSum, DSP_CFG_CKSUM);
-//    }
-    //CLRWDT(); 
+    //TODO: If first write fails retry 
     
     tmp = WriteRaccoon( SYS_IOCFG0_Value, SYS_IOCFG0); //IO port configuration
-//    if(tmp ==false)
-//    {
-//      WriteRaccoon( SYS_IOCFG0_Value, SYS_IOCFG0);
-//    }
-    //CLRWDT(); 
+    //TODO: If first write fails retry 
     tmp = WriteRaccoon( SYS_IOCFG1_Value, SYS_IOCFG1); //IO port configuration
-//    if(tmp ==false)
-//    {
-//      WriteRaccoon( SYS_IOCFG1_Value, SYS_IOCFG1);
-//    }
-    //CLRWDT(); 
+    //TODO: If first write fails retry 
     
     
     WriteRaccoon(0x00000018, 0x75); //chksum Wrong not to close cf
-//    Raccoon_UpdateChecksum();
-//    CLRWDT(); 
-    //testshow = 0x33333;
+    //TODO: Figure out why sample code does write proper checksum 
+    //Raccoon_UpdateChecksum();
 }
 
 /*=========================================================================================\n
@@ -618,9 +576,8 @@ void Raccoon_ReadRMS(void)
   
   for( i = 0; i < (sizeof(RMS_RegAddr)/sizeof(uint8_t)); i++)
   {
-    if( ReadRaccoon( RMS_RegAddr[i], 1))
+    if(ReadRaccoon( RMS_RegAddr[i], 1))
     {
-        //MemCpy((uint8_t *)pRmsData, gs_RacCtrl.ucBuf, 4);//zzp0113
         memcpy((uint8_t *)pRmsData, gs_RacCtrl.ucBuf, 4);
         
         pRmsData++;
@@ -637,7 +594,6 @@ void Raccoon_ReadRMS(void)
             if((float)Buf_RMS.ul_P/gs_JbPm.ul_PG < (((float)(gs_JbPm.ui_Ib/1000)*(gs_JbPm.ui_Un/100))*1.5/1000))//Rated 1.5�� 1.1W(0.1%) *1.5
             {
               gs_power_energycal.ul_power[0] = 0;
-//              gs_power_energycal.ul_power[0] = 0x1234567;
             }
             else
             {
@@ -654,7 +610,6 @@ void Raccoon_ReadRMS(void)
             if((float)Buf_RMS.ul_Q/gs_JbPm.ul_PG < (((float)(gs_JbPm.ui_Ib/1000)*(gs_JbPm.ui_Un/100))*1.5/1000))//Rated 1.5�� 1.1W(0.1%) *1.5
             {
               gs_power_energycal.ul_Npower[0] = 0;
-//              gs_power_energycal.ul_Npower[0] = 0x1234567;
             }
             else
             {
@@ -676,7 +631,6 @@ void Raccoon_ReadRMS(void)
               if((float)Buf_RMS.ul_PB/gs_JbPm.ul_PG < (((float)(gs_JbPm.ui_Ib/1000)*(gs_JbPm.ui_Un/100))*1.5/1000))//Rated 1.5�� 1.1W(0.1%) *1.5
               {
                 gs_power_energycal.ul_power[0] = 0;
-//                gs_power_energycal.ul_power[0] = 0x1234567;
               }
               else
               {
@@ -693,7 +647,6 @@ void Raccoon_ReadRMS(void)
               if((float)Buf_RMS.ul_QB/gs_JbPm.ul_PG < (((float)(gs_JbPm.ui_Ib/1000)*(gs_JbPm.ui_Un/100))*1.5/1000))//Rated 1.5�� 1.1W(0.1%) *1.5
               {
                 gs_power_energycal.ul_Npower[0] = 0;
-//                gs_power_energycal.ul_Npower[0] = 0X1234567;
               }
               else
               {
@@ -765,78 +718,6 @@ void Raccoon_ReadRMS(void)
   }else
   {
       ReadRmsErrCnt = 0;    //Communication is normal, reading the effective value is abnormal, the count value is cleared to 0
-      
-      //***********************************************************************
-//         if(gs_ComGroup[ComIndex_Uart2].ucStt == ComStt_Idle) 
-//          {
-//            gs_ComGroup[ComIndex_Uart2].ucStt = ComStt_Send ;
-//            Uart2_SendEn();//485ctrl tx en
-//            //for(a=0;a<2;a++)
-//            //{
-//              UART2->CTRL&=0XEFF;
-//              gs_RmsData_txbuf = *(pRmsData-4);//+a);
-//              for(j=0;j<4;j++)
-//              {
-//                //while(UART_GetINTStatus(UART2, UART_INTSTS_TXDONE));
-//                while(UART2->STATE&BIT5)
-//                {
-//                UART2->STATE |= BIT5;
-//                }
-//                //UART_SendData( UART2, gs_RmsData_txbuf>>(8*j));
-//                UART_SendData( UART2, gs_RmsData_txbuf>>(24-8*j));
-//                DelayXms(8);
-//                //UART2->DATA = 0X55+j;
-//                //UART_SendData( UART2, 0X55);
-//              }
-//            //} 
-//               
-//            Uart2_CtrIoIdle();//485ctrl idle
-//            UART2->CTRL |= 0X100;
-//            gs_ComGroup[ComIndex_Uart2].ucStt = ComStt_Idle;
-//          }
-      
-//        if(gs_ComGroup[ComIndex_Uart2].ucStt == ComStt_Idle && DMA_Flag == 1/*rms_count > 1*/) 
-//          {
-//            
-//            gs_ComGroup[ComIndex_Uart2].ucStt = ComStt_Send ;
-//            Uart2_SendEn();//485ctrl tx en            
-//              UART2->CTRL&=0XEFF;
-//              //temp_buf[DMA_Count] = temp_buf[DMA_Count]>>8;
-//             
-//              for(j=0;j<4;j++)
-//              {
-//                while(UART2->STATE&BIT5)
-//                {
-//                UART2->STATE |= BIT5;
-//                }
-//                UART_SendData( UART2, temp_buf[DMA_Count]>>(24-8*j));
-////                UART_SendData( UART2, Rms_ul_I1_Data[DMA_Count]>>(24-8*j));
-//                DelayXms(8);
-//
-//              }
-//              //gs_RmsData_txbuf++;
-//              DMA_Count++;
-//              if(DMA_Count > 1537)
-//              //if(DMA_Count > 99)  
-//              {
-//                DMA_Count = 0;
-//                //gs_RmsData_txbuf = (uint32_t *)&temp_buf[0];
-//                DelayXms(20);
-//                UART_SendData( UART2, 0xAA);
-//                DelayXms(50);
-//                UART_SendData( UART2, 0x55);
-//                DMA_Flag = 0;
-//                rms_count = 0;
-//              }
-//            
-//            
-//            Uart2_CtrIoIdle();//485ctrl idle
-//            UART2->CTRL |= 0X100;
-//            gs_ComGroup[ComIndex_Uart2].ucStt = ComStt_Idle;
-//          }
-        
-        //*********************************************************************
-         
   }
 }
 

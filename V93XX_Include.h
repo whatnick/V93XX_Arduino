@@ -15,6 +15,13 @@
 #define RX_V93XX 15
 #define TX_V93XX 16
 
+typedef union
+{
+	uint32_t lword;
+	uint16_t word[2];
+	uint8_t  byte[4];
+}Word32;
+
 VAREXT uint8_t data[1000];
 VAREXT uint32_t temp_buf[1000];
 VAREXT uint8_t DMA_Flag;
@@ -115,5 +122,82 @@ typedef struct
 }S_JBPM;
 
 VAREXT S_JBPM gs_JbPm;            //School table parameters
+
+/***********************ADC PARA****************/
+#define ADCA1X    0
+#define ADCA4X    BIT0
+#define ADCA8X    BIT1
+#define ADCA16X  BIT0+BIT1
+#define ADCA32X  BIT0+BIT1+BIT2
+#define ADCB1X    0
+#define ADCB4X    BIT3
+#define ADCB8X    BIT4
+#define ADCB16X  BIT3+BIT4
+#define ADCB32X  BIT3+BIT4+BIT5
+#define ADCU1X    0
+#define ADCU2X    BIT6
+#define ADCM1X    0
+#define ADCM2X    BIT7
+
+
+
+
+ 
+#define Const_MaxCf     0x05//Maximum number of pulses
+#define ADCFRE   819200
+#define PLEVEL   65         //Startup power
+#define IALEVEL  25         //Start current
+#define IBLEVEL  70
+#define ULEVEL   200         //The voltage displayed is 20.0V
+#define CRIULEVEL1  1694
+#define CRIULEVEL2  2640
+#define gs_JbPm_SG 0X01E8
+
+typedef struct 
+{
+    uint8_t PluseType:1;      //0 RTC 1 Rate Switch pluse
+    uint8_t STAFLAG:1;
+    uint8_t Imbalance:1;
+    uint8_t Pdir:1;
+    uint8_t Prog:1;
+    uint8_t undefine5:1;
+    uint8_t undefine6:1;
+    uint8_t Current:1;
+}GS_SYSRUNST;
+
+
+VAREXT GS_SYSRUNST gs_SysRunSt;
+
+/*=========================================================================================================\n
+* @function_name: gCuc_HEX2BCDMap
+* @function_file: Api.c
+* @Description: HEX2BCD Table
+*
+* @parameters:
+* @return: 
+* @Author: lwb (2012-02-29)
+* @Remark: 
+*-------------------------------------------------------------------------------------------
+* @Modified by:
+* @Modify content:
+============================================================================================================================*/
+const uint8_t gCuc_HEX2BCDMap[]  =
+{// 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09,
+    0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, //0-9
+    0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18, 0x19, //10-19
+    0x20, 0x21, 0x22, 0x23, 0x24, 0x25, 0x26, 0x27, 0x28, 0x29, //20-29
+    0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x38, 0x39, //30-39
+    0x40, 0x41, 0x42, 0x43, 0x44, 0x45, 0x46, 0x47, 0x48, 0x49, //40-49
+    0x50, 0x51, 0x52, 0x53, 0x54, 0x55, 0x56, 0x57, 0x58, 0x59, //50-59
+    0x60, 0x61, 0x62, 0x63, 0x64, 0x65, 0x66, 0x67, 0x68, 0x69, //60-69
+    0x70, 0x71, 0x72, 0x73, 0x74, 0x75, 0x76, 0x77, 0x78, 0x79, //70-79
+    0x80, 0x81, 0x82, 0x83, 0x84, 0x85, 0x86, 0x87, 0x88, 0x89, //80-89
+    0x90, 0x91, 0x92, 0x93, 0x94, 0x95, 0x96, 0x97, 0x98, 0x99, //90-99
+};
+
+uint32_t CalRMS(uint16_t addr);
+uint8_t APIByteHEX2BCD(uint8_t ucHEX);
+uint16_t IntHex2BCD(uint16_t hex);
+uint32_t Hex2BCD(uint32_t hex);
 
 #endif
