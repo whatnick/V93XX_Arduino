@@ -6,6 +6,8 @@
 #include <HardwareSerial.h>
 #include "V93XX_Include.h"
 
+//#define DEBUG
+
 uint8_t cksdis_flag = 0;
 
 // Globals defined as externs in header
@@ -142,6 +144,7 @@ void Init_UartRaccoon(void)
     CORTEX_SetPriority_ClearPending_EnableIRQ(UART5_IRQn, 1); //Enable UART transmit doen/receive interrupt
      */
     Serial1.begin(4800, SERIAL_8O1, RX_V93XX, TX_V93XX);
+    Serial1.onReceive(Raccoon_UartReceive);
 }
 
 /*=========================================================================================\n
@@ -217,16 +220,14 @@ void Raccoon_UartTransmit(void)
 void Raccoon_UartReceive(void)
 {
   uint8_t temp;
-  while(gs_RacCtrl.ucStatus==Rac_Rev)
+  while((gs_RacCtrl.ucStatus==Rac_Rev) && (Serial1.available() > 0))
   {
      if(gs_RacCtrl.ucRevPoint<gs_RacCtrl.ucRevLen)
      {
          temp = Serial1.read();
          gs_RacCtrl.ucBuf[gs_RacCtrl.ucRevPoint++] = temp;
-         #ifdef DEBUG
-         Serial.print(temp, HEX);
-         #endif
-         
+         // Give CPU some time to write to buffer ?
+         //delayMicroseconds(10);
          if(gs_RacCtrl.ucRevPoint==gs_RacCtrl.ucRevLen)
          {
              gs_RacCtrl.ucStatus=Rac_WaitPro;
@@ -296,10 +297,12 @@ uint8_t  WriteRaccoon( uint32_t Data, uint8_t Addr)
     //}
     //DelayXms(6);
     delayMicroseconds(6000);
-    Raccoon_UartReceive();
+    while(gs_RacCtrl.ucStatus!=Rac_WaitPro){
+      delayMicroseconds(10);
+    }
 
     // Due to half-duplex nature of the bus we have to delay here for next transmission
-    delayMicroseconds(guc_CommDelayTime*3000);
+    delayMicroseconds(guc_CommDelayTime*500);
 
     if(gs_RacCtrl.ucBuf[0]==ucSum)
     {
@@ -361,7 +364,18 @@ uint8_t ReadRaccoon(uint8_t Addr,uint8_t num)
 //    guc_CommDelayTime=17;
     guc_CommDelayTime = (uint8_t)((BAUDRate_1Byte_OverTime * (4*num+5) +10)/10)+1;//Send 4 bytes, receive 4*N+1 bytes Unit: 10ms
     Raccoon_UartTransmit();
-    delayMicroseconds(1250); // Response arrives after 1.25ms
+    // Overwrite the buffer to empty, ready to recieve
+    // This seems to help the first receive
+    if(gs_RacCtrl.ucStatus==Rac_Rev) {
+      for(int i = 0 ; i < gs_RacCtrl.ucRevLen; i++)
+      {
+        gs_RacCtrl.ucBuf[i] = 0;
+      }
+    }
+    delayMicroseconds(1450); // Response arrives after 1.45ms
+    while(gs_RacCtrl.ucStatus!=Rac_WaitPro){
+      delayMicroseconds(10);
+    }
     // This delay loop is useful if using interrupts with UART on receive
     //while(gs_RacCtrl.ucStatus!=Rac_WaitPro)
     //{
@@ -372,7 +386,8 @@ uint8_t ReadRaccoon(uint8_t Addr,uint8_t num)
     //      return false;           //If timeout
     //    }
     //}
-    Raccoon_UartReceive();
+    // Receive twice ??
+    // Raccoon_UartReceive();
     ucSum = Raccoon_Cmd1+Raccoon_Cmd2;
     for(i=0;i<(num*4);i++)               //Read no more than 255 bytes
     {
@@ -382,7 +397,7 @@ uint8_t ReadRaccoon(uint8_t Addr,uint8_t num)
     ucSum=~ucSum;
     ucSum+=0x33;
     // Due to half-duplex nature of the bus we have to delay here for next transmission
-    delayMicroseconds(guc_CommDelayTime*3000);
+    delayMicroseconds(guc_CommDelayTime*500);
     if(gs_RacCtrl.ucBuf[num*4]==ucSum)
     {
         return true;
@@ -579,7 +594,6 @@ void Raccoon_ReadRMS(void)
     if(ReadRaccoon( RMS_RegAddr[i], 1))
     {
         memcpy((uint8_t *)pRmsData, gs_RacCtrl.ucBuf, 4);
-        
         pRmsData++;
 //******************************************************************************
         if(gs_Channel.ucSta == SETA)
@@ -698,7 +712,6 @@ void Raccoon_ReadRMS(void)
     {
         ReadRmsErrFlg = 1;   //Communication anomaly when reading valid value
         cksdis_flag += 3;//zzp
-        
     }
   }
   if( ReadRmsErrFlg)
