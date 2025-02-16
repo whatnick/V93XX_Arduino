@@ -482,7 +482,7 @@
 
 
 //======================================================================
-#define Actual_BAUDRate 2400     // Actual baud rate
+#define Actual_BAUDRate 4800     // Actual baud rate
 
 #define BAUDRate_1Byte_OverTime  (float)(11*1000/Actual_BAUDRate*1.4)  //Communication timeout rate
 

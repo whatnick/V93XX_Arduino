@@ -67,25 +67,7 @@ void Init_RacCtrl(void)
 ===========================================================================================*/
 void RxReset_Raccoon(void)
 {
-    //GPIO_InitType GPIO_InitStruct;
-
-    //Raccoon_PwrOn();         //Metering chip power IO port control
-    //GPIOB->OEN &=~ (BIT5);//iof0 1 Powering the marmot
-    //GPIOB->IE  &=~ (BIT5);
-    //GPIOB->DAT |= (BIT5);
-    //Raccoon_SlaveAddrCfg();  //Device address setting
-    
-    //UART_DeInit(UART5);
-    
-    /* UART5 TX pin(IOB7), output mode */
-    //GPIO_InitStruct.GPIO_Mode = GPIO_Mode_OUTPUT_CMOS;
-    //GPIO_InitStruct.GPIO_Pin = GPIO_Pin_7;
-    //GPIOBToF_Init(GPIOB, &GPIO_InitStruct);
     pinMode(TX_V93XX, OUTPUT);
-    
-    //IO_DAT( IOB_DAT, 7) = 1;
-    //DelayXms(3);
-    //IO_DAT( IOB_DAT, 7) = 0;
 
     //TX pin for UART , RX pin for ASIC need to be held low
     digitalWrite(TX_V93XX, HIGH);
@@ -93,15 +75,10 @@ void RxReset_Raccoon(void)
     digitalWrite(TX_V93XX, LOW);
     
     //TODO: This looks like an interrupt based non-blocking delay, have to implement something similar
-    //guc_CommDelayTime = 40;   //The RX pin needs to be continuously low for 70ms to reset the chip. //zzp0219 10->12
-    //while(guc_CommDelayTime >0);
     delayMicroseconds(92500);
-    //IO_DAT( IOB_DAT, 7) = 1;
     digitalWrite(TX_V93XX, HIGH);
     
     //TODO: This looks like an interrupt based non-blocking delay, have to implement something similar
-    //guc_CommDelayTime = 2;   //The RX pin inputs a high level, and the RAM can be freely accessed after 2.15ms.
-    //while(guc_CommDelayTime >0);
     delayMicroseconds(2150);
 }
 /*=========================================================================================\n
@@ -119,31 +96,8 @@ void RxReset_Raccoon(void)
 ===========================================================================================*/
 void Init_UartRaccoon(void)
 {
-    //UART_InitType UART_InitStruct;
-    //GPIO_InitType GPIO_InitStruct;
-    
-  
-    /* UART5 RX pin(IOB1), input mode */
-    /**
-    GPIO_InitStruct.GPIO_Mode = GPIO_Mode_INPUT;
-    GPIO_InitStruct.GPIO_Pin = GPIO_Pin_1;
-    GPIOBToF_Init(GPIOB, &GPIO_InitStruct);
-     
-    UART_DeInit(UART5);
-    UART_StructInit(&UART_InitStruct);
-    
-    UART_InitStruct.Mode     = UART_MODE_RX | UART_MODE_TX;
-    UART_InitStruct.Parity   = UART_PARITY_ODD;           //Odd Parity
-    UART_InitStruct.WordLen  = UART_WORDLEN_9B;           //9 data bits, 8 data bits + 1 check bit
-    UART_InitStruct.FirstBit = UART_FIRSTBIT_LSB;
-    UART_InitStruct.Baudrate = 4800;                      //Fixed baud rate 4800
-    UART_Init(UART5, &UART_InitStruct);
-
-    UART_INTConfig(UART5, UART_INT_RX, ENABLE);
-    UART_INTConfig(UART5, UART_INT_TXDONE, ENABLE);
-    CORTEX_SetPriority_ClearPending_EnableIRQ(UART5_IRQn, 1); //Enable UART transmit doen/receive interrupt
-     */
-    Serial1.begin(4800, SERIAL_8O1, RX_V93XX, TX_V93XX);
+    Serial1.begin(Actual_BAUDRate, SERIAL_8O1, RX_V93XX, TX_V93XX);
+    // TODO: Include a transmit complete interrupt
     Serial1.onReceive(Raccoon_UartReceive);
 }
 
@@ -180,7 +134,7 @@ void Raccoon_Delay(uint8_t n)//zzp0113
 /*=========================================================================================\n
 * @function_name: Raccoon_UartTransmit
 * @function_file: Raccoon.c
-* @Description: UART4 sends, called in interrupt
+* @Description:Serial1 sends, TODO: called in interrupt
 *
 * @parameter:
 * @return:
@@ -283,20 +237,11 @@ uint8_t  WriteRaccoon( uint32_t Data, uint8_t Addr)
     gs_RacCtrl.ucRevLen=1;
     gs_RacCtrl.ucRevPoint=0;                 
     Raccoon_UartTransmit();                    //Start Sending
-//    guc_CommDelayTime=7;
     guc_CommDelayTime = (uint8_t)((BAUDRate_1Byte_OverTime * 9 +10)/10)+1;//Send 8 bytes, receive 1 byte Unit: 10ms
-    // Only relevant if receiving via interrupts
-    //while(gs_RacCtrl.ucStatus!=Rac_WaitPro)
-    //{
-    //    //ClearWDT();	//Feed the Dog
-    //    if((guc_CommDelayTime==0))
-    //    {
-    //        cksdis_flag += 1;
-    //        return false;                   //If timeout  
-    //    }
-    //}
-    //DelayXms(6);
+    
     delayMicroseconds(6000);
+
+    // Only relevant if receiving via interrupts
     while(gs_RacCtrl.ucStatus!=Rac_WaitPro){
       delayMicroseconds(10);
     }
@@ -361,7 +306,6 @@ uint8_t ReadRaccoon(uint8_t Addr,uint8_t num)
     gs_RacCtrl.ucSendPoint=0;
     gs_RacCtrl.ucRevLen=(num*4)+1;           
     gs_RacCtrl.ucRevPoint=0;
-//    guc_CommDelayTime=17;
     guc_CommDelayTime = (uint8_t)((BAUDRate_1Byte_OverTime * (4*num+5) +10)/10)+1;//Send 4 bytes, receive 4*N+1 bytes Unit: 10ms
     Raccoon_UartTransmit();
     // Overwrite the buffer to empty, ready to recieve
@@ -373,21 +317,11 @@ uint8_t ReadRaccoon(uint8_t Addr,uint8_t num)
       }
     }
     delayMicroseconds(1450); // Response arrives after 1.45ms
+    // This delay loop is useful if using interrupts with UART on receive
     while(gs_RacCtrl.ucStatus!=Rac_WaitPro){
       delayMicroseconds(10);
     }
-    // This delay loop is useful if using interrupts with UART on receive
-    //while(gs_RacCtrl.ucStatus!=Rac_WaitPro)
-    //{
-        //ClearWDT();	//Feed the Dog
-    //    if((guc_CommDelayTime==0))
-    //    {
-    //      cksdis_flag += 2;
-    //      return false;           //If timeout
-    //    }
-    //}
-    // Receive twice ??
-    // Raccoon_UartReceive();
+
     ucSum = Raccoon_Cmd1+Raccoon_Cmd2;
     for(i=0;i<(num*4);i++)               //Read no more than 255 bytes
     {
@@ -457,10 +391,7 @@ void BroadcastWriteRaccoon(uint32_t Data,uint8_t Addr)
     
     Raccoon_UartTransmit();
     guc_CommDelayTime = (uint8_t)((BAUDRate_1Byte_OverTime * 8 +10)/10);//Send 8 bytes, receive 0 bytes Unit: 10ms
-    while(guc_CommDelayTime>0)
-    {
-      //ClearWDT();	//Feed the Dog
-    }   
+    // TODO : Include relevant delay
 }
 
 /*=========================================================================================\n
@@ -548,7 +479,7 @@ void Raccoon_UpdatePar(void)
         }
     }
     
-    ucSum = 0xFFFFFFFF-ucSum;    //Checksum register DSP_CFG_CKSUM  0x0~0x7��0x25~0x3a��0x55~0x60
+    ucSum = 0xFFFFFFFF-ucSum;    //Checksum register DSP_CFG_CKSUM  0x0~0x7Copy0x25~0x3aCopy0x55~0x60
     tmp = WriteRaccoon( ucSum, DSP_CFG_CKSUM);
     //TODO: If first write fails retry 
     
@@ -712,6 +643,7 @@ void Raccoon_ReadRMS(void)
     {
         ReadRmsErrFlg = 1;   //Communication anomaly when reading valid value
         cksdis_flag += 3;//zzp
+        Serial.println("RMS Read failure");
     }
   }
   if( ReadRmsErrFlg)
@@ -777,18 +709,7 @@ void Raccoon_RunCheck(void)
 //-----------------------------------------------------------------
 void Raccoon_TMR1_Init(void)
 {
-//  TMR_InitType TMR_InitStruct;
-//  
-//  TMR_DeInit(TMR1);
-//  TMR_InitStruct.ClockSource = TMR_CLKSRC_INTERNAL; //Clock source: internal clock(APB clock 6553600)
-//  TMR_InitStruct.EXTGT = TMR_EXTGT_DISABLE;
-//  TMR_InitStruct.Period = 65536 * 8 - 1;  //Overflow interval: 80ms
-//  TMR_Init(TMR1, &TMR_InitStruct);
-//  
-//  TMR_INTConfig(TMR1, ENABLE);  //Enable Timer1 interrupt
-//  CORTEX_SetPriority_ClearPending_EnableIRQ(TMR1_IRQn, 0); //High priority
-//  
-//  TMR_Cmd(TMR1, DISABLE);  //DISABLE Timer1
+  // TODO: Enable timer based interrupts for delays here
 }
 
 //----------------------------Function Info -----------------------
@@ -882,6 +803,7 @@ void Raccoon_UpdateChecksum(void)
 
 void DMA_DataUpload(void)
 {
+  // TODO: Setup SPI DMA mode for chips that support it
   //SPI_Cmd(SPI2,ENABLE);
   //SPI_SmartModeCmd(SPI2, ENABLE);
   //DMA_StopTransmit(DMA_CHANNEL_0, DISABLE); //Clear stop
