@@ -40,7 +40,7 @@ void V93XX_Raccoon::RegisterWrite(uint8_t address, uint32_t data) {
         0x7d,
 
         // CMD1 (Payload length, addr, operation)
-        (uint8_t)(((num_registers - 1) << 4) | ((this->device_address) << 2) | CMD_WRITE),
+        (uint8_t)(((num_registers - 1) << 4) | ((this->device_address) << 2) | CmdOperation::WRITE),
         // CMD2 (7b Address)
         (uint8_t)(address & 0x7f),
 
@@ -54,13 +54,29 @@ void V93XX_Raccoon::RegisterWrite(uint8_t address, uint32_t data) {
         0x00
     };
 
+    uint8_t checksum = 0;
     // Calculate Checksum, Sum of payload &0xFF
     for(int idx = 1 ; idx < sizeof(payload)/sizeof(uint8_t) - 1; idx++){
-        payload[7] += payload[idx];
+        checksum += payload[idx];
     }
-    payload[7] = 0x33 + ~payload[7];
-
+    checksum = 0x33 + ~checksum;
+    payload[7] = checksum;
 
     // Transmit payload
     this->serial.write(payload, sizeof(payload)/sizeof(uint8_t));
+
+    // wait for response
+    while(this->serial.available() < 1){
+        delay(1);
+    }
+
+    // Read response
+    uint8_t response[1];
+    this->serial.readBytes(response, 1);
+
+    // TODO:: Proper error handling
+    bool checksum_valid = response[0] == checksum;
+    if(!checksum_valid){
+        Serial.printf("RegisterWrite(): Checksum invalid (expected: h%02X, received: h%02X)\n", checksum, response[4]);
+    }
 }

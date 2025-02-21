@@ -20,10 +20,10 @@ private:
     int tx_pin;
     int rx_pin;
 
-    enum {
-        CMD_BROADCAST = 0,
-        CMD_READ = 1,
-        CMD_WRITE = 2,
+    enum CmdOperation {
+        BROADCAST = 0,
+        READ = 1,
+        WRITE = 2,
     };
 };
 
