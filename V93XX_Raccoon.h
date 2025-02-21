@@ -11,6 +11,7 @@ public:
     void Init();
     
     void RegisterWrite(uint8_t address, uint32_t data);
+    uint32_t RegisterRead(uint8_t address);
     
     void UartReceive();
 

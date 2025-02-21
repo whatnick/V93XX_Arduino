@@ -80,3 +80,48 @@ void V93XX_Raccoon::RegisterWrite(uint8_t address, uint32_t data) {
         Serial.printf("RegisterWrite(): Checksum invalid (expected: h%02X, received: h%02X)\n", checksum, response[4]);
     }
 }
+
+
+uint32_t V93XX_Raccoon::RegisterRead(uint8_t address) {
+    uint8_t i;
+
+    const int num_registers = 1;
+    // Described in Section 7.3 of Datasheet
+    uint8_t request[4] = {
+        // Header
+        0x7d,
+
+        // CMD1 (request length, addr, operation)
+        (uint8_t)(((num_registers - 1) << 4) | ((this->device_address) << 2) | CmdOperation::READ),
+        // CMD2 (7b Address)
+        (uint8_t)(address & 0x7f),
+                
+        // Checksum
+        0x00
+    };
+
+    // Calculate Checksum, Sum of request &0xFF
+    request[3] = 0x33 + ~(request[1] + request[2]);
+
+    // Transmit request
+    this->serial.write(request, sizeof(request)/sizeof(uint8_t));
+
+    // wait for response
+    while(this->serial.available() < 5){
+        delay(1);
+    }
+
+    // Read response
+    uint8_t response[5];
+    this->serial.readBytes(response, 5);
+
+    uint32_t result = response[0] | (response[1] << 8) | (response[2] << 16) | (response[3] << 24);
+    uint8_t checksum = 0x33 + ~(request[1] + request[2] + response[1] + response[2] + response[3] + response[4]);
+
+    // TODO:: Proper error handling
+    bool checksum_valid = checksum == response[4];
+    if(!checksum_valid){
+        Serial.printf("RegisterRead(): Checksum invalid (expected: h%02X, received: h%02X)\n", checksum, response[4]);
+    }
+    return result;
+}
