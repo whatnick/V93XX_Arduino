@@ -22,7 +22,7 @@ void V93XX_Raccoon::RxReset() {
 }
 
 void V93XX_Raccoon::Init() {
-    this->serial.begin(4800, SerialConfig::SERIAL_8O1, this->rx_pin, this->tx_pin);
+    this->serial.begin(19200, SerialConfig::SERIAL_8O1, this->rx_pin, this->tx_pin);
     this->serial.onReceive(std::bind(&V93XX_Raccoon::UartReceive, this));
 }
 
