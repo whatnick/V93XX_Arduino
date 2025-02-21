@@ -116,7 +116,7 @@ uint32_t V93XX_Raccoon::RegisterRead(uint8_t address) {
     this->serial.readBytes(response, 5);
 
     uint32_t result = response[0] | (response[1] << 8) | (response[2] << 16) | (response[3] << 24);
-    uint8_t checksum = 0x33 + ~(request[1] + request[2] + response[1] + response[2] + response[3] + response[4]);
+    uint8_t checksum = 0x33 + ~(request[1] + request[2] + response[0] + response[1] + response[2] + response[3]);
 
     // TODO:: Proper error handling
     bool checksum_valid = checksum == response[4];
