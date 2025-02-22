@@ -68,13 +68,32 @@ void setup()
 	raccoon.RegisterWrite(REG_SYS_IOCFG0, 0x00000000);
 	raccoon.RegisterWrite(REG_SYS_IOCFG1, 0x003C3A00);
 
-
 }
 
 void loop()
 {
+	uint32_t rms_register_values[10];
+	rms_register_values[0] = raccoon.RegisterRead(REG_DSP_DAT_PA1);
+	rms_register_values[1] = raccoon.RegisterRead(REG_DSP_DAT_QA1);
+	rms_register_values[2] = raccoon.RegisterRead(REG_DSP_DAT_RMS1UA);
+	rms_register_values[3] = raccoon.RegisterRead(REG_DSP_DAT_RMS1IA);
+	rms_register_values[4] = raccoon.RegisterRead(REG_DSP_DAT_RMS1IB);
+	rms_register_values[5] = raccoon.RegisterRead(REG_DSP_DAT_FRQ);
+	rms_register_values[6] = raccoon.RegisterRead(REG_DSP_DAT_PB1);
+	rms_register_values[7] = raccoon.RegisterRead(REG_DSP_DAT_QB1);
+	rms_register_values[8] = raccoon.RegisterRead(REG_DSP_DAT_SA1);
+	rms_register_values[9] = raccoon.RegisterRead(REG_DSP_DAT_SB1);
+
+	Serial.printf("DSP_DAT: PA1=%08X ", rms_register_values[0]);
+	Serial.printf("QA1=%08X ", rms_register_values[1]);
+	Serial.printf("RMS1UA=%08X ", rms_register_values[2]);
+	Serial.printf("RMS1IA=%08X ", rms_register_values[3]);
+	Serial.printf("RMS1IB=%08X ", rms_register_values[4]);
+	Serial.printf("FRQ=%08X ", rms_register_values[5]);
+	Serial.printf("PB1=%08X ", rms_register_values[6]);
+	Serial.printf("QB1=%08X ", rms_register_values[7]);
+	Serial.printf("SA1=%08X ", rms_register_values[8]);
+	Serial.printf("SB1=%08X\n", rms_register_values[9]);
+
 	sleep(1);
-	digitalWrite(13, HIGH);
-	sleep(1);
-	digitalWrite(13, LOW);
 }
