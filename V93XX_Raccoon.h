@@ -63,6 +63,9 @@ public:
     void RegisterWrite(uint8_t address, uint32_t data);
     uint32_t RegisterRead(uint8_t address);
 
+    void ConfigureBlockRead(const uint8_t addresses[], uint8_t num_addresses);
+    void RegisterBlockRead(uint32_t (&values)[], uint8_t num_values);
+
     void LoadConfiguration(const ControlRegisters& ctrl, const CalibrationRegisters& calibrations);
     
 private:
@@ -75,6 +78,7 @@ private:
         BROADCAST = 0,
         READ = 1,
         WRITE = 2,
+        BLOCK = 3,
     };
 };
 
