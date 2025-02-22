@@ -265,7 +265,7 @@ void V93XX_Raccoon::RegisterBlockRead(uint32_t (&values)[], uint8_t num_values)
 }
 
 void V93XX_Raccoon::LoadConfiguration(const V93XX_Raccoon::ControlRegisters& ctrl, const V93XX_Raccoon::CalibrationRegisters& calibrations) {
-    uint8_t checksum = 0;
+    uint32_t checksum = 0;
     
     // Load control values [0x00 - 0x07]
     for (int i = 0; i < sizeof(V93XX_Raccoon::ControlRegisters)/sizeof(uint32_t); i++){
@@ -284,5 +284,5 @@ void V93XX_Raccoon::LoadConfiguration(const V93XX_Raccoon::ControlRegisters& ctr
     // The sum of {0x00-0x07, 0x25-0x3a, 0x55-0x60} Needs to equal 0xFFFF_FFFFF to pass self-check.
     // Calculate DSP_CFG_CKSUM (0x28) to ensure this is the case
     checksum = 0xFFFFFFFF - checksum;
-    this->RegisterWrite(checksum, DSP_CFG_CKSUM);
+    this->RegisterWrite(DSP_CFG_CKSUM, checksum);
 }

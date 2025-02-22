@@ -22,7 +22,6 @@ public:
                 uint32_t DSP_CTRL3;
                 uint32_t DSP_CTRL4;
                 uint32_t DSP_CTRL5;
-                uint32_t DSP_CFG_BPF;
             };
         };        
     };
