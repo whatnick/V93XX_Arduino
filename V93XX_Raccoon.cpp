@@ -145,8 +145,7 @@ void V93XX_Raccoon::RegisterWrite(uint8_t address, uint32_t data) {
     }
 
     // Read response
-    uint8_t checksum_response;
-    checksum_response = this->RxBufferPop();
+    uint8_t checksum_response = this->RxBufferPop();
 
     // TODO:: Proper error handling
     bool checksum_valid = checksum_response == checksum;
@@ -186,18 +185,21 @@ uint32_t V93XX_Raccoon::RegisterRead(uint8_t address) {
     }
 
     // Read response
-    uint8_t response[5];
-    for(int i = 0; i < 5; i++){
-        response[i] = this->RxBufferPop();
+    uint8_t response[4];
+    uint8_t checksum = request[1] + request[2];
+    uint32_t result = 0;
+    for(int i = 0; i < 4; i++){
+        uint8_t data = this->RxBufferPop();
+        checksum += data;
+        result |= data << (8 * i);
     }
-
-    uint32_t result = response[0] | (response[1] << 8) | (response[2] << 16) | (response[3] << 24);
-    uint8_t checksum = 0x33 + ~(request[1] + request[2] + response[0] + response[1] + response[2] + response[3]);
-
+    checksum = 0x33 + ~(checksum);
+    uint8_t checksum_response = this->RxBufferPop();
+    
     // TODO:: Proper error handling
-    bool checksum_valid = checksum == response[4];
+    bool checksum_valid = checksum == checksum_response;
     if(!checksum_valid){
-        Serial.printf("RegisterRead(): Checksum invalid (expected: h%02X, received: h%02X)\n", checksum, response[4]);
+        Serial.printf("RegisterRead(): Checksum invalid (expected: h%02X, received: h%02X)\n", checksum, checksum_response);
     }
     return result;
 }
