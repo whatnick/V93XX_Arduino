@@ -20,10 +20,10 @@ void setup()
 	uint32_t register_value;
 
 	// Read system status
-	register_value = raccoon.RegisterRead(REG_SYS_INTSTS);
+	register_value = raccoon.RegisterRead(SYS_INTSTS);
 	Serial.printf("Interrupt Register: %08X\n", register_value);
 
-	register_value = raccoon.RegisterRead(REG_SYS_VERSION);
+	register_value = raccoon.RegisterRead(SYS_VERSION);
 	Serial.printf("System Version: %08X\n", register_value);
 
 	// Load control and calibration values
@@ -65,20 +65,20 @@ void setup()
 	);
 
 	// Configure IO Ports
-	raccoon.RegisterWrite(REG_SYS_IOCFG0, 0x00000000);
-	raccoon.RegisterWrite(REG_SYS_IOCFG1, 0x003C3A00);
+	raccoon.RegisterWrite(SYS_IOCFG0, 0x00000000);
+	raccoon.RegisterWrite(SYS_IOCFG1, 0x003C3A00);
 
 	raccoon.ConfigureBlockRead((const uint8_t[]){
-		REG_DSP_DAT_PA1,
-		REG_DSP_DAT_QA1,
-		REG_DSP_DAT_RMS1UA,
-		REG_DSP_DAT_RMS1IA,
-		REG_DSP_DAT_RMS1IB,
-		REG_DSP_DAT_FRQ,
-		REG_DSP_DAT_PB1,
-		REG_DSP_DAT_QB1,
-		REG_DSP_DAT_SA1,
-		REG_DSP_DAT_SB1
+		DSP_DAT_PA1,
+		DSP_DAT_QA1,
+		DSP_DAT_RMS1UA,
+		DSP_DAT_RMS1IA,
+		DSP_DAT_RMS1IB,
+		DSP_DAT_FRQ,
+		DSP_DAT_PB1,
+		DSP_DAT_QB1,
+		DSP_DAT_SA1,
+		DSP_DAT_SB1
 	}, 10);
 
 }
@@ -87,6 +87,8 @@ void loop()
 {
 	uint32_t rms_register_values[10];
 	raccoon.RegisterBlockRead(rms_register_values, 10);
+
+	raccoon.RegisterRead(DSP_DAT_PA1);
 
 	Serial.printf("DSP_DAT: PA1=%08X ", rms_register_values[0]);
 	Serial.printf("QA1=%08X ", rms_register_values[1]);
@@ -98,6 +100,8 @@ void loop()
 	Serial.printf("QB1=%08X ", rms_register_values[7]);
 	Serial.printf("SA1=%08X ", rms_register_values[8]);
 	Serial.printf("SB1=%08X\n", rms_register_values[9]);
+
+
 
 	sleep(1);
 }
