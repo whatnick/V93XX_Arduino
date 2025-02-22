@@ -37,10 +37,17 @@ const uint8_t CalibrationAddresses[] = {
     EGY_PWRTH,          //	Energy register accumulation threshold. Since the energy register is 46 bits
 };
 
-V93XX_Raccoon::V93XX_Raccoon(int rx_pin, int tx_pin, HardwareSerial& serial, int device_address) : serial(serial) {
+V93XX_Raccoon::V93XX_Raccoon(int rx_pin, int tx_pin, HardwareSerial& serial, int device_address) 
+    : serial(serial),
+      serial_rx_buffer(std::list<uint8_t>(64)) 
+{
     this->device_address = device_address;
     this->tx_pin = tx_pin;
     this->rx_pin = rx_pin;
+
+    while(this->serial_rx_buffer.size()){
+        this->serial_rx_buffer.pop();
+    }
 }
 
 void V93XX_Raccoon::RxReset() {
@@ -58,7 +65,43 @@ void V93XX_Raccoon::RxReset() {
 }
 
 void V93XX_Raccoon::Init() {
+    
     this->serial.begin(19200, SerialConfig::SERIAL_8O1, this->rx_pin, this->tx_pin);
+    
+    noInterrupts();
+    this->serial.onReceive(std::bind(&V93XX_Raccoon::RxReceive, this));
+    while(this->serial_rx_buffer.size()){
+        this->serial_rx_buffer.pop();
+    }
+    interrupts();
+}
+
+void V93XX_Raccoon::RxReceive(){
+    while(this->serial.available() > 0){
+        uint8_t data = this->serial.read();
+        noInterrupts();
+        if((this->serial_rx_buffer.size() < 64)){
+            this->serial_rx_buffer.push(data);
+        }
+        interrupts();
+    }
+}
+
+unsigned int V93XX_Raccoon::RxBufferCount() {
+    unsigned int count = 0;
+    noInterrupts();
+    count = this->serial_rx_buffer.size();
+    interrupts();
+    return count;
+}
+
+uint8_t V93XX_Raccoon::RxBufferPop() {
+    uint8_t data = 0;
+    noInterrupts();
+    data = this->serial_rx_buffer.front();
+    this->serial_rx_buffer.pop();
+    interrupts();
+    return data;
 }
 
 void V93XX_Raccoon::RegisterWrite(uint8_t address, uint32_t data) {
@@ -97,18 +140,18 @@ void V93XX_Raccoon::RegisterWrite(uint8_t address, uint32_t data) {
     this->serial.write(payload, sizeof(payload)/sizeof(uint8_t));
 
     // wait for response
-    while(this->serial.available() < 1){
+    while(this->RxBufferCount() < 1){
         delay(1);
     }
 
     // Read response
-    uint8_t response[1];
-    this->serial.readBytes(response, 1);
+    uint8_t checksum_response;
+    checksum_response = this->RxBufferPop();
 
     // TODO:: Proper error handling
-    bool checksum_valid = response[0] == checksum;
+    bool checksum_valid = checksum_response == checksum;
     if(!checksum_valid){
-        Serial.printf("RegisterWrite(): Checksum invalid (expected: h%02X, received: h%02X)\n", checksum, response[4]);
+        Serial.printf("RegisterWrite(): Checksum invalid (expected: h%02X, received: h%02X)\n", checksum, checksum_response);
     }
 }
 
@@ -138,13 +181,15 @@ uint32_t V93XX_Raccoon::RegisterRead(uint8_t address) {
     this->serial.write(request, sizeof(request)/sizeof(uint8_t));
 
     // wait for response
-    while(this->serial.available() < 5){
+    while(this->RxBufferCount() < 5){
         delay(1);
     }
 
     // Read response
     uint8_t response[5];
-    this->serial.readBytes(response, 5);
+    for(int i = 0; i < 5; i++){
+        response[i] = this->RxBufferPop();
+    }
 
     uint32_t result = response[0] | (response[1] << 8) | (response[2] << 16) | (response[3] << 24);
     uint8_t checksum = 0x33 + ~(request[1] + request[2] + response[0] + response[1] + response[2] + response[3]);
@@ -193,7 +238,7 @@ void V93XX_Raccoon::RegisterBlockRead(uint32_t (&values)[], uint8_t num_values)
     this->serial.write(request, sizeof(request)/sizeof(uint8_t));
 
     // wait for response
-    while(this->serial.available() < ((4*num_values)+1)){
+    while(this->RxBufferCount() < ((4*num_values)+1)){
         delay(1);
     }
 
@@ -201,14 +246,16 @@ void V93XX_Raccoon::RegisterBlockRead(uint32_t (&values)[], uint8_t num_values)
     uint8_t checksum = request[1] + request[2];
     for(int i = 0; i < num_values; i++){
         uint8_t response[4];
-        this->serial.readBytes(response, 4);
+        for(int i = 0; i < 4; i++){
+            response[i] = this->RxBufferPop();
+        }
         values[i] = response[0] | (response[1] << 8) | (response[2] << 16) | (response[3] << 24);
         checksum += response[0] + response[1] + response[2] + response[3];
     }
     checksum = 0x33 + ~(checksum);
 
     // TODO:: Proper error handling
-    uint8_t respose_checksum = this->serial.read();
+    uint8_t respose_checksum = this->RxBufferPop();
     bool checksum_valid = checksum == respose_checksum;
     if(!checksum_valid){
         Serial.printf("RegisterBlockRead(): Checksum invalid (expected: h%02X, received: h%02X)\n", checksum, respose_checksum);

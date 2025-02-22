@@ -2,6 +2,8 @@
 #define V93XX_RACCOON_H__
 
 #include <Arduino.h>
+#include <queue>
+#include <list>
 #include "V93XX_Raccoon_registers.h"
 
 class V93XX_Raccoon
@@ -74,6 +76,12 @@ private:
     int tx_pin;
     int rx_pin;
 
+    std::queue<uint8_t, std::list<uint8_t>> serial_rx_buffer{std::queue<uint8_t, std::list<uint8_t>>()};
+
+    void RxReceive();
+    uint8_t RxBufferPop();
+    unsigned int RxBufferCount();
+    
     enum CmdOperation {
         BROADCAST = 0,
         READ = 1,
