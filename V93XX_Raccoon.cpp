@@ -1,6 +1,42 @@
 
 #include "V93XX_Raccoon.h"
 
+const uint8_t ControlAddresses[] = {
+    REG_DSP_ANA0,   // Analog Control 0
+    REG_DSP_ANA1,   // Analog Control 1
+    REG_DSP_CTRL0,  // Digital Control 0
+    REG_DSP_CTRL1,  // Digital Control 1
+    REG_DSP_CTRL2,  // Digital Control 2
+    REG_DSP_CTRL3,  // Digital Control 3
+    REG_DSP_CTRL4,  // Digital Control 4
+    REG_DSP_CTRL5,  // Digital Control 5
+};
+
+const uint8_t CalibrationAddresses[] = {
+    REG_DSP_CFG_CALI_PA,    // Active power A ratio difference correction
+    REG_DSP_CFG_DC_PA,      //  Active power A small signal correction
+    REG_DSP_CFG_CALI_QA,    //	Reactive power A ratio difference correction
+    REG_DSP_CFG_DC_QA,      //	Reactive power A small signal correction
+    REG_DSP_CFG_CALI_PB,    //	Active power B ratio difference correction
+    REG_DSP_CFG_DC_PB,      //	Active power B small signal correction
+    REG_DSP_CFG_CALI_QB,    //	Reactive power B ratio difference correction
+    REG_DSP_CFG_DC_QB,      //	Reactive power B small signal correction
+    REG_DSP_CFG_CALI_RMSUA, //	Voltage RMS ratio correction
+    REG_DSP_CFG_RMS_DCUA,   //	Voltage RMS small signal correction
+    REG_DSP_CFG_CALI_RMSIA, //	Current A effective value ratio correction
+    REG_DSP_CFG_RMS_DCIA,   //	Current A RMS small signal correction
+    REG_DSP_CFG_CALI_RMSIB, //	Current B effective value ratio difference correction
+    REG_DSP_CFG_RMS_DCIB,   //	Current B RMS small signal correction
+    REG_DSP_CFG_PHC,        //	Angular error correction register
+    REG_DSP_CFG_DCUA,       //	Voltage channel DC correction value
+    REG_DSP_CFG_DCIA,       //	Current A channel DC correction value
+    REG_DSP_CFG_DCIB,       //	Current B channel DC correction value
+    REG_DSP_CFG_BPF,        //	Bandpass filter coefficients
+    REG_DSP_CFG_CKSUM,      //	Checksum Configuration Registers
+    REG_EGY_PROCTH,         //	Energy register anti-submarine threshold (less than it will not accumulate)
+    REG_EGY_PWRTH,          //	Energy register accumulation threshold. Since the energy register is 46 bits
+};
+
 V93XX_Raccoon::V93XX_Raccoon(int rx_pin, int tx_pin, HardwareSerial& serial, int device_address) : serial(serial) {
     this->device_address = device_address;
     this->tx_pin = tx_pin;
@@ -119,4 +155,28 @@ uint32_t V93XX_Raccoon::RegisterRead(uint8_t address) {
         Serial.printf("RegisterRead(): Checksum invalid (expected: h%02X, received: h%02X)\n", checksum, response[4]);
     }
     return result;
+}
+
+
+void V93XX_Raccoon::LoadConfiguration(const V93XX_Raccoon::ControlRegisters& ctrl, const V93XX_Raccoon::CalibrationRegisters& calibrations) {
+    uint8_t checksum = 0;
+    
+    // Load control values [0x00 - 0x07]
+    for (int i = 0; i < sizeof(V93XX_Raccoon::ControlRegisters)/sizeof(uint32_t); i++){
+        this->RegisterWrite(ControlAddresses[i], ctrl._array[i]);
+        checksum += ctrl._array[i];
+    }
+
+    // Load calibration values [0x25 - 0x3a]
+    for (int i = 0; i < sizeof(V93XX_Raccoon::CalibrationRegisters)/sizeof(uint32_t); i++){
+        this->RegisterWrite(CalibrationAddresses[i], calibrations._array[i]);
+        checksum += calibrations._array[i];
+    }
+
+    // TODO: Update checksum when configuring [0x55-0x60]
+
+    // The sum of {0x00-0x07, 0x25-0x3a, 0x55-0x60} Needs to equal 0xFFFF_FFFFF to pass self-check.
+    // Calculate DSP_CFG_CKSUM (0x28) to ensure this is the case
+    checksum = 0xFFFFFFFF - checksum;
+    this->RegisterWrite(checksum, REG_DSP_CFG_CKSUM);
 }
