@@ -68,21 +68,25 @@ void setup()
 	raccoon.RegisterWrite(REG_SYS_IOCFG0, 0x00000000);
 	raccoon.RegisterWrite(REG_SYS_IOCFG1, 0x003C3A00);
 
+	raccoon.ConfigureBlockRead((const uint8_t[]){
+		REG_DSP_DAT_PA1,
+		REG_DSP_DAT_QA1,
+		REG_DSP_DAT_RMS1UA,
+		REG_DSP_DAT_RMS1IA,
+		REG_DSP_DAT_RMS1IB,
+		REG_DSP_DAT_FRQ,
+		REG_DSP_DAT_PB1,
+		REG_DSP_DAT_QB1,
+		REG_DSP_DAT_SA1,
+		REG_DSP_DAT_SB1
+	}, 10);
+
 }
 
 void loop()
 {
 	uint32_t rms_register_values[10];
-	rms_register_values[0] = raccoon.RegisterRead(REG_DSP_DAT_PA1);
-	rms_register_values[1] = raccoon.RegisterRead(REG_DSP_DAT_QA1);
-	rms_register_values[2] = raccoon.RegisterRead(REG_DSP_DAT_RMS1UA);
-	rms_register_values[3] = raccoon.RegisterRead(REG_DSP_DAT_RMS1IA);
-	rms_register_values[4] = raccoon.RegisterRead(REG_DSP_DAT_RMS1IB);
-	rms_register_values[5] = raccoon.RegisterRead(REG_DSP_DAT_FRQ);
-	rms_register_values[6] = raccoon.RegisterRead(REG_DSP_DAT_PB1);
-	rms_register_values[7] = raccoon.RegisterRead(REG_DSP_DAT_QB1);
-	rms_register_values[8] = raccoon.RegisterRead(REG_DSP_DAT_SA1);
-	rms_register_values[9] = raccoon.RegisterRead(REG_DSP_DAT_SB1);
+	raccoon.RegisterBlockRead(rms_register_values, 10);
 
 	Serial.printf("DSP_DAT: PA1=%08X ", rms_register_values[0]);
 	Serial.printf("QA1=%08X ", rms_register_values[1]);
