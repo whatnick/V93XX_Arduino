@@ -159,10 +159,11 @@ uint32_t V93XX_Raccoon::RegisterRead(uint8_t address) {
 
 void V93XX_Raccoon::ConfigureBlockRead(const uint8_t addresses[], uint8_t num_addresses)
 {
+    uint8_t const* address_ptr = addresses;
     for (int blk = 0; blk < 4; blk++){
         uint32_t combined_address = 0;
         for (int i = 0; (i < 4) && (num_addresses); i++) {
-            combined_address |= (addresses[i] << (8 * i));
+            combined_address |= (*address_ptr++ << (8 * i));
             num_addresses--;
         }
         RegisterWrite(REG_SYS_BLK_ADDR0 + blk, combined_address);
