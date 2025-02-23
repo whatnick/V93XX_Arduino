@@ -39,7 +39,7 @@ const uint8_t CalibrationAddresses[] = {
 
 V93XX_Raccoon::V93XX_Raccoon(int rx_pin, int tx_pin, HardwareSerial& serial, int device_address) 
     : serial(serial),
-      serial_rx_buffer(std::list<uint8_t>(64)) 
+      serial_rx_buffer(std::list<uint8_t>(65)) // 65bytes = 16x u32 (block read) + u8 (CRC)
 {
     this->device_address = device_address;
     this->tx_pin = tx_pin;
@@ -80,7 +80,7 @@ void V93XX_Raccoon::RxReceive(){
     while(this->serial.available() > 0){
         uint8_t data = this->serial.read();
         noInterrupts();
-        if((this->serial_rx_buffer.size() < 64)){
+        if((this->serial_rx_buffer.size() < 65)){
             this->serial_rx_buffer.push(data);
         }
         interrupts();
