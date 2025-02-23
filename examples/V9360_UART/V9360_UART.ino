@@ -3,8 +3,8 @@
 //Define DEBUG to have raw serial read hex bytes echoed
 #define DEBUG
 
-const int V93XX_TX_PIN = 6;
-const int V93XX_RX_PIN = 7;
+const int V93XX_TX_PIN = 16;
+const int V93XX_RX_PIN = 15;
 const int V93XX_DEVICE_ADDRESS = 0x00;
 
 V93XX_Raccoon raccoon(V93XX_RX_PIN, V93XX_TX_PIN, Serial1, V93XX_DEVICE_ADDRESS);

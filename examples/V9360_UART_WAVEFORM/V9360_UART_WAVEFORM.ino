@@ -1,8 +1,8 @@
 #include "V93XX_Raccoon.h"
 #include <cstring>
 
-const int V93XX_TX_PIN = 6;
-const int V93XX_RX_PIN = 7;
+const int V93XX_TX_PIN = 16;
+const int V93XX_RX_PIN = 15;
 const int V93XX_DEVICE_ADDRESS = 0x00;
 
 V93XX_Raccoon raccoon(V93XX_RX_PIN, V93XX_TX_PIN, Serial1, V93XX_DEVICE_ADDRESS);
@@ -156,6 +156,11 @@ void loop()
         plt.plot(wave_data)
         plt.show()
         ```
+    */
+
+    /*
+    If FFT is desired on controlled use little kiss fft code vendored in
+    https://github.com/stolk/little_kiss_fft
     */
 
     sleep(1);
