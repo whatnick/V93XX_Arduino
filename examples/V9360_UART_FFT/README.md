@@ -16,3 +16,4 @@ using the V93xx bulk read features. FFT takes about XXms. We should benchmark di
 
 1. [KissFFT](https://github.com/stolk/little_kiss_fft)
 2. [ESP32-IDF FFT](https://github.com/espressif/esp-dsp/tree/master/examples/fft)
+3. [Arduino FFT](https://github.com/kosme/arduinoFFT) - Latest maintained
