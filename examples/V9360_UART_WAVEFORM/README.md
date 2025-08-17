@@ -34,6 +34,6 @@ plt.show()
 
 Capturing and exporting the waveform buffer over a 19200bps UART link isn't particularly fast.
 The Configuration and internal capture takes about 150ms, and downloading the entire buffer 795ms.
-This is even making use of the V95XX's bulk read features.
+This is even making use of the V93XX's bulk read features.
 
 ![Wavegen](img/V93XX_saleae.png)
