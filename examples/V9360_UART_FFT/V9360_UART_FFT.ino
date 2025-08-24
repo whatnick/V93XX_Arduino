@@ -1,5 +1,8 @@
 #include "V93XX_Raccoon.h"
-#include "arduinoFFT.h"
+// If ESP DSP does not work
+// or on non-esp platforms use ArduinoFFT
+// #include "arduinoFFT.h"
+#include "esp_dsp.h"
 #include <cstring>
 
 const int V93XX_TX_PIN = 16;
@@ -8,23 +11,11 @@ const int V93XX_DEVICE_ADDRESS = 0x00;
 
 V93XX_Raccoon raccoon(V93XX_RX_PIN, V93XX_TX_PIN, Serial1, V93XX_DEVICE_ADDRESS);
 
-/*
-These values can be changed in order to evaluate the functions
-*/
-const uint16_t samples = 64; //This value MUST ALWAYS be a power of 2
-const double signalFrequency = 1000;
-const double samplingFrequency = 5000;
-const uint8_t amplitude = 100;
-
-/*
-These are the input and output vectors
-Input vectors receive computed results from FFT
-*/
-double vReal[samples];
-double vImag[samples];
 
 /* Create FFT object */
-ArduinoFFT<double> FFT = ArduinoFFT<double>(vReal, vImag, samples, samplingFrequency);
+// ArduinoFFT<double> FFT = ArduinoFFT<double>(vReal, vImag, samples, samplingFrequency);
+
+#define MAX_FFT_SIZE 1024 // Define the maximum FFT size you'll use
 
 void setup()
 {
@@ -88,6 +79,14 @@ void setup()
 
     register_value = raccoon.RegisterRead(SYS_INTSTS);
     Serial.printf("Interrupt Register: %08X\n", register_value);
+
+    // Initialize the FFT module
+    esp_err_t ret = dsps_fft2r_init_fc32(NULL, MAX_FFT_SIZE); 
+    if (ret != ESP_OK) {
+        Serial.printf("Error initializing FFT: %d\n", ret);
+        while(1); // Halt on error
+    }
+    Serial.println("FFT initialized successfully.");
 }
 
 void loop()
@@ -154,5 +153,27 @@ void loop()
         std::memcpy(&waveform_buffer[index], data, read_size * sizeof(uint32_t));
         remaining -= read_size;
         index += read_size;
+    }
+
+    // Compute the FFT
+    // dsps_fft2r_fc32 requirements:
+    // - Input array must be of type float_t (complex data is interleaved as real/imag pairs).
+    // - Input size must be a power of two and not exceed MAX_FFT_SIZE.
+    // - If input data is smaller than MAX_FFT_SIZE, zero-pad the remaining elements.
+    // - Output is in-place, overwriting the input array.
+    float_t fft_input[MAX_FFT_SIZE] = {0};
+    for (int i = 0; i < waveform_size; ++i) {
+        fft_input[i] = (float_t)waveform_buffer[i];
+    }
+
+    dsps_fft2r_fc32(fft_input, MAX_FFT_SIZE);
+    // Capture the FFT output
+    for (int i = 0; i < MAX_FFT_SIZE; ++i) {
+        waveform_buffer[i] = static_cast<uint32_t>(fft_input[i]);
+    }
+
+    // Print FFT Output and map to frequency domain
+    for (int i = 0; i < MAX_FFT_SIZE; ++i) {
+        Serial.printf("FFT Output[%d] = %d\n", i, waveform_buffer[i]);
     }
 }
