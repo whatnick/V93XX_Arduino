@@ -11,7 +11,7 @@ Ideally this function should be calibrated using a signal generator and passed t
 
 ## Performance
 
-The V9360 will perform less well than the V9381 over SPI. Waveform buffer capture and dowload takes abount 1000ms
+The V9360 will perform less well than the V9381 over SPI. Waveform buffer capture and download takes about 1000ms
 using the V93xx bulk read features. FFT takes about XXms. We should benchmark different FFT processes.
 
 1. [KissFFT](https://github.com/stolk/little_kiss_fft)
