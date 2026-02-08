@@ -1,17 +1,15 @@
 #ifndef V93XX_RACCOON_H__
 #define V93XX_RACCOON_H__
 
-#include <Arduino.h>
-#include <queue>
-#include <list>
 #include "V93XX_Raccoon_registers.h"
+#include <Arduino.h>
+#include <list>
+#include <queue>
 
-class V93XX_Raccoon
-{ 
-public:
+class V93XX_Raccoon {
+  public:
     __attribute__((packed)) struct ControlRegisters {
-        union
-        {
+        union {
             uint32_t _array[8];
             struct {
                 uint32_t DSP_ANA0;
@@ -23,12 +21,11 @@ public:
                 uint32_t DSP_CTRL4;
                 uint32_t DSP_CTRL5;
             };
-        };        
+        };
     };
 
     __attribute__((packed)) struct CalibrationRegisters {
-        union
-        {
+        union {
             uint32_t _array[22];
             struct {
                 uint32_t DSP_CFG_CALI_PA;
@@ -57,19 +54,19 @@ public:
         };
     };
 
-    V93XX_Raccoon(int rx_pin, int tx_pin, HardwareSerial& serial, int device_address);
+    V93XX_Raccoon(int rx_pin, int tx_pin, HardwareSerial &serial, int device_address);
     void RxReset();
     void Init();
-    
+
     void RegisterWrite(uint8_t address, uint32_t data);
     uint32_t RegisterRead(uint8_t address);
 
     void ConfigureBlockRead(const uint8_t addresses[], uint8_t num_addresses);
     void RegisterBlockRead(uint32_t (&values)[], uint8_t num_values);
 
-    void LoadConfiguration(const ControlRegisters& ctrl, const CalibrationRegisters& calibrations);
-    
-private:
+    void LoadConfiguration(const ControlRegisters &ctrl, const CalibrationRegisters &calibrations);
+
+  private:
     HardwareSerial &serial;
     int device_address;
     int tx_pin;
@@ -80,7 +77,7 @@ private:
     void RxReceive();
     uint8_t RxBufferPop();
     unsigned int RxBufferCount();
-    
+
     enum CmdOperation {
         BROADCAST = 0,
         READ = 1,
@@ -88,6 +85,5 @@ private:
         BLOCK = 3,
     };
 };
-
 
 #endif
