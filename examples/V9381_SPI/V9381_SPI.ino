@@ -16,6 +16,8 @@ const int V93XX_CS_PIN = 5; // Chip Select pin (adjust for your board)
 // Default SPI bus (MOSI, MISO, SCK) and 1MHz clock
 V93XX_SPI v9381(V93XX_CS_PIN);
 
+bool v9381_spi_ready = false;
+
 void setup() {
     Serial.begin(115200);
     Serial.print("Starting V9381 SPI Driver\n");
@@ -26,21 +28,28 @@ void setup() {
     // - ThreeWire: CS is held low and enforces >=400us SCK-low time before ops.
 #if defined(ARDUINO_ARCH_ESP32)
     // Explicitly pass SPI pins to use the ESP32-S3 VSPI/IOMUX defaults.
-    v9381.Init(V93XX_SPI::WireMode::FourWire, true, V93XX_SCK_PIN, V93XX_MISO_PIN, V93XX_MOSI_PIN);
+    v9381.Init(V93XX_SPI::WireMode::FourWire, true, V93XX_SPI::ChecksumMode::Dirty, V93XX_SCK_PIN, V93XX_MISO_PIN,
+               V93XX_MOSI_PIN);
 #else
-    v9381.Init(V93XX_SPI::WireMode::FourWire, true);
+    v9381.Init(V93XX_SPI::WireMode::FourWire, true, V93XX_SPI::ChecksumMode::Dirty);
 #endif
 
     delay(100); // Allow chip to stabilize
 
-    uint32_t register_value;
+    uint32_t register_value = 0;
 
-    // Read system status
-    register_value = v9381.RegisterRead(SYS_INTSTS);
+    // Ensure SPI interface is initialized by a successful read.
+    // Avoid 0x7F on SPI because it is reserved for interface control sequences.
+    v9381_spi_ready = v9381.RegisterReadChecked(SYS_INTSTS, register_value);
+    if (!v9381_spi_ready) {
+        Serial.println("SPI init read failed; pausing further reads.");
+        return;
+    }
     Serial.printf("Interrupt Register: 0x%08X\n", register_value);
 
-    register_value = v9381.RegisterRead(SYS_VERSION);
-    Serial.printf("System Version: 0x%08X\n", register_value);
+    // Read system status
+    register_value = v9381.RegisterRead(SYS_STS);
+    Serial.printf("System Status: 0x%08X\n", register_value);
 
     // Load control and calibration values
     v9381.LoadConfiguration(
@@ -107,6 +116,11 @@ void setup() {
 }
 
 void loop() {
+    if (!v9381_spi_ready) {
+        delay(1000);
+        return;
+    }
+
     // Perform block read to get all values efficiently
     uint32_t measurement_values[10];
     v9381.RegisterBlockRead(measurement_values, 10);

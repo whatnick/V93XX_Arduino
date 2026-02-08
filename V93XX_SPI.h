@@ -18,6 +18,11 @@ class V93XX_SPI {
         ThreeWire = 1,
     };
 
+    enum class ChecksumMode : uint8_t {
+        Dirty = 0,
+        Clean = 1,
+    };
+
     // Reuse register structures from UART version for compatibility
     __attribute__((packed)) struct ControlRegisters {
         union {
@@ -69,9 +74,9 @@ class V93XX_SPI {
      * @brief Constructor for V9381 SPI driver
      * @param cs_pin Chip select pin number
      * @param spi_bus Reference to SPI bus (default SPIClass)
-     * @param spi_freq SPI clock frequency in Hz (default 1MHz)
+    * @param spi_freq SPI clock frequency in Hz (default 400kHz)
      */
-    V93XX_SPI(int cs_pin, SPIClass &spi_bus = SPI, uint32_t spi_freq = 1000000);
+    V93XX_SPI(int cs_pin, SPIClass &spi_bus = SPI, uint32_t spi_freq = 400000);
 
     /**
      * @brief Initialize SPI bus + chip-select behavior.
@@ -80,14 +85,19 @@ class V93XX_SPI {
      * If @p initialize_interface is true, this will also send the required SPI
      * interface initialization write to address 0x7F.
      */
-    void Init(WireMode wire_mode = WireMode::FourWire, bool initialize_interface = true);
+    void Init(WireMode wire_mode = WireMode::FourWire, bool initialize_interface = true,
+              ChecksumMode checksum_mode = ChecksumMode::Dirty);
 
     /**
      * @brief Initialize SPI bus with explicit pin mapping (useful on ESP32/ESP32-S3).
      *
      * Uses `spi_bus.begin(sck, miso, mosi, cs_pin)` when pin values are provided.
      */
-    void Init(WireMode wire_mode, bool initialize_interface, int8_t sck_pin, int8_t miso_pin, int8_t mosi_pin);
+    void Init(WireMode wire_mode, bool initialize_interface, ChecksumMode checksum_mode, int8_t sck_pin,
+              int8_t miso_pin, int8_t mosi_pin);
+
+    void SetChecksumMode(ChecksumMode mode);
+
 
     /**
      * @brief Perform the SPI interface initialization sequence (write magic to 0x7F).
@@ -168,8 +178,10 @@ class V93XX_SPI {
     SPISettings spi_settings;
 
     WireMode wire_mode = WireMode::FourWire;
+    ChecksumMode checksum_mode = ChecksumMode::Dirty;
     bool high_address_offset_enabled = false;
     uint32_t last_op_end_us = 0;
+    bool spi_ready = false;
 
     uint8_t configured_block_addrs[16] = {0};
     uint8_t configured_block_addr_count = 0;
@@ -183,13 +195,17 @@ class V93XX_SPI {
     uint8_t CalculateCRC8(const uint8_t *data, size_t length);
 
     uint8_t BuildCmdByte(uint8_t address7, bool is_read) const;
+    static inline void WriteLe32(uint8_t *dst, uint32_t value);
     void EnforceInterOpTiming();
     void ApplyAddressOffsetModeIfNeeded(uint8_t address);
+    bool EnsureReady();
+    bool RegisterReadCheckedInternal(uint8_t address, uint32_t &out_value);
+    bool RegisterReadRawInternal(uint8_t address, uint8_t (&data_bytes)[4], uint8_t &checksum_rx);
 
     /**
      * @brief Begin SPI transaction with chip select
      */
-    inline void BeginTransaction();
+    inline void BeginTransaction(uint8_t address);
 
     /**
      * @brief End SPI transaction and release chip select

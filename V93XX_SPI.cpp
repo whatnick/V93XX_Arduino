@@ -40,12 +40,14 @@ const uint8_t CalibrationAddresses[] = {
 V93XX_SPI::V93XX_SPI(int cs_pin, SPIClass &spi_bus, uint32_t spi_freq)
     : spi_bus(spi_bus), cs_pin(cs_pin), spi_freq(spi_freq), spi_settings(spi_freq, MSBFIRST, SPI_MODE0) {}
 
-void V93XX_SPI::Init(WireMode wire_mode, bool initialize_interface) {
-    Init(wire_mode, initialize_interface, -1, -1, -1);
+void V93XX_SPI::Init(WireMode wire_mode, bool initialize_interface, ChecksumMode checksum_mode) {
+    Init(wire_mode, initialize_interface, checksum_mode, -1, -1, -1);
 }
 
-void V93XX_SPI::Init(WireMode wire_mode, bool initialize_interface, int8_t sck_pin, int8_t miso_pin, int8_t mosi_pin) {
+void V93XX_SPI::Init(WireMode wire_mode, bool initialize_interface, ChecksumMode checksum_mode, int8_t sck_pin,
+                     int8_t miso_pin, int8_t mosi_pin) {
     this->wire_mode = wire_mode;
+    this->checksum_mode = checksum_mode;
 
     pinMode(this->cs_pin, OUTPUT);
     digitalWrite(this->cs_pin, HIGH);
@@ -70,11 +72,13 @@ void V93XX_SPI::Init(WireMode wire_mode, bool initialize_interface, int8_t sck_p
     this->last_op_end_us = micros();
 
     if (initialize_interface) {
-        (void)InitializeInterface();
+        this->spi_ready = InitializeInterface();
+    } else {
+        this->spi_ready = false;
     }
 }
 
-inline void V93XX_SPI::BeginTransaction() {
+inline void V93XX_SPI::BeginTransaction(uint8_t address) {
     EnforceInterOpTiming();
 
     if (this->wire_mode == WireMode::ThreeWire) {
@@ -123,6 +127,13 @@ uint8_t V93XX_SPI::BuildCmdByte(uint8_t address7, bool is_read) const {
     return (uint8_t)(((address7 & 0x7F) << 1) | (is_read ? 1 : 0));
 }
 
+inline void V93XX_SPI::WriteLe32(uint8_t *dst, uint32_t value) {
+    dst[0] = (uint8_t)(value & 0xFF);
+    dst[1] = (uint8_t)((value >> 8) & 0xFF);
+    dst[2] = (uint8_t)((value >> 16) & 0xFF);
+    dst[3] = (uint8_t)((value >> 24) & 0xFF);
+}
+
 void V93XX_SPI::EnforceInterOpTiming() {
     if (this->wire_mode == WireMode::FourWire) {
         // Datasheet: must be >=50us between any two operations.
@@ -146,26 +157,54 @@ void V93XX_SPI::ApplyAddressOffsetModeIfNeeded(uint8_t address) {
     }
 }
 
+void V93XX_SPI::SetChecksumMode(ChecksumMode mode) { this->checksum_mode = mode; }
+
 bool V93XX_SPI::InitializeInterface() {
     // Write 0x5A7896B4 to address 0x7F.
     // CMD for write to 0x7F => 0xFE.
     uint8_t frame[6];
     frame[0] = BuildCmdByte(0x7F, false);
-    frame[1] = 0xB4;
-    frame[2] = 0x96;
-    frame[3] = 0x78;
-    frame[4] = 0x5A;
+    WriteLe32(&frame[1], 0x5A7896B4UL);
     frame[5] = CalculateCRC8(frame, 5);
 
-    BeginTransaction();
-    for (size_t i = 0; i < sizeof(frame); i++) {
-        (void)this->spi_bus.transfer(frame[i]);
-    }
-    EndTransaction();
+    for (int attempt = 0; attempt < 2; attempt++) {
+        BeginTransaction(0x7F);
+        for (size_t i = 0; i < sizeof(frame); i++) {
+            (void)this->spi_bus.transfer(frame[i]);
+        }
+        EndTransaction();
 
-    // Datasheet suggests reading any readable register and checking checksum.
-    uint32_t dummy;
-    return RegisterReadChecked(SYS_VERSION, dummy);
+        delay(2);
+
+        // Datasheet suggests reading any readable register and checking checksum.
+        // Avoid 0x7F on SPI because it is reserved for interface control sequences.
+        uint8_t data_bytes[4] = {0};
+        uint8_t checksum_rx = 0;
+        bool checksum_ok = RegisterReadRawInternal(SYS_INTSTS, data_bytes, checksum_rx);
+        bool has_data = false;
+        for (size_t i = 0; i < 4; i++) {
+            if (data_bytes[i] != 0x00 && data_bytes[i] != 0xFF) {
+                has_data = true;
+                break;
+            }
+        }
+        bool accept = (this->checksum_mode == ChecksumMode::Dirty) ? (checksum_ok || has_data) : checksum_ok;
+        if (accept) {
+            this->spi_ready = true;
+            return true;
+        }
+    }
+
+    this->spi_ready = false;
+    return false;
+}
+
+bool V93XX_SPI::EnsureReady() {
+    if (this->spi_ready) {
+        return true;
+    }
+    delay(1000);
+    return false;
 }
 
 void V93XX_SPI::SetHighAddressOffsetEnabled(bool enabled) {
@@ -176,13 +215,10 @@ void V93XX_SPI::SetHighAddressOffsetEnabled(bool enabled) {
 
     uint8_t frame[6];
     frame[0] = BuildCmdByte(0x7F, false);
-    frame[1] = (uint8_t)(magic & 0xFF);
-    frame[2] = (uint8_t)((magic >> 8) & 0xFF);
-    frame[3] = (uint8_t)((magic >> 16) & 0xFF);
-    frame[4] = (uint8_t)((magic >> 24) & 0xFF);
+    WriteLe32(&frame[1], magic);
     frame[5] = CalculateCRC8(frame, 5);
 
-    BeginTransaction();
+    BeginTransaction(0x7F);
     for (size_t i = 0; i < sizeof(frame); i++) {
         (void)this->spi_bus.transfer(frame[i]);
     }
@@ -199,13 +235,10 @@ bool V93XX_SPI::RegisterWriteChecked(uint8_t address, uint32_t data) {
     uint8_t addr7 = (uint8_t)(address & 0x7F);
     uint8_t frame[6];
     frame[0] = BuildCmdByte(addr7, false);
-    frame[1] = (uint8_t)(data & 0xFF);
-    frame[2] = (uint8_t)((data >> 8) & 0xFF);
-    frame[3] = (uint8_t)((data >> 16) & 0xFF);
-    frame[4] = (uint8_t)((data >> 24) & 0xFF);
+    WriteLe32(&frame[1], data);
     frame[5] = CalculateCRC8(frame, 5);
 
-    BeginTransaction();
+    BeginTransaction(address);
     for (size_t i = 0; i < sizeof(frame); i++) {
         (void)this->spi_bus.transfer(frame[i]);
     }
@@ -217,11 +250,43 @@ bool V93XX_SPI::RegisterWriteChecked(uint8_t address, uint32_t data) {
 
 uint32_t V93XX_SPI::RegisterRead(uint8_t address) {
     uint32_t value = 0;
+    if (!EnsureReady()) {
+        return 0;
+    }
     (void)RegisterReadChecked(address, value);
     return value;
 }
 
 bool V93XX_SPI::RegisterReadChecked(uint8_t address, uint32_t &out_value) {
+    if (!EnsureReady()) {
+        out_value = 0;
+        return false;
+    }
+    return RegisterReadCheckedInternal(address, out_value);
+}
+
+bool V93XX_SPI::RegisterReadCheckedInternal(uint8_t address, uint32_t &out_value) {
+    uint8_t data_bytes[4] = {0};
+    uint8_t checksum_rx = 0;
+    bool checksum_ok = RegisterReadRawInternal(address, data_bytes, checksum_rx);
+    bool ok = (this->checksum_mode == ChecksumMode::Dirty) ? true : checksum_ok;
+    if (!ok) {
+        uint8_t expected = 0;
+        expected += BuildCmdByte((uint8_t)(address & 0x7F), true);
+        expected += data_bytes[0];
+        expected += data_bytes[1];
+        expected += data_bytes[2];
+        expected += data_bytes[3];
+        expected = 0x33 + (uint8_t)(~expected);
+        Serial.printf("RegisterRead(): Checksum invalid (expected: 0x%02X, received: 0x%02X)\n", expected, checksum_rx);
+    }
+
+    out_value = (uint32_t)data_bytes[0] | ((uint32_t)data_bytes[1] << 8) | ((uint32_t)data_bytes[2] << 16) |
+                ((uint32_t)data_bytes[3] << 24);
+    return ok;
+}
+
+bool V93XX_SPI::RegisterReadRawInternal(uint8_t address, uint8_t (&data_bytes)[4], uint8_t &checksum_rx) {
     ApplyAddressOffsetModeIfNeeded(address);
 
     uint8_t addr7 = (uint8_t)(address & 0x7F);
@@ -229,14 +294,19 @@ bool V93XX_SPI::RegisterReadChecked(uint8_t address, uint32_t &out_value) {
     uint8_t rx[6] = {0};
     tx[0] = BuildCmdByte(addr7, true);
 
-    BeginTransaction();
+    BeginTransaction(address);
     for (size_t i = 0; i < sizeof(tx); i++) {
         rx[i] = this->spi_bus.transfer(tx[i]);
     }
     EndTransaction();
 
     // rx[0] is don't care. Data comes in rx[1..4], checksum in rx[5].
-    uint8_t data_bytes[4] = {rx[1], rx[2], rx[3], rx[4]};
+    data_bytes[0] = rx[1];
+    data_bytes[1] = rx[2];
+    data_bytes[2] = rx[3];
+    data_bytes[3] = rx[4];
+    checksum_rx = rx[5];
+
     uint8_t expected = 0;
     expected += tx[0];
     expected += data_bytes[0];
@@ -245,14 +315,7 @@ bool V93XX_SPI::RegisterReadChecked(uint8_t address, uint32_t &out_value) {
     expected += data_bytes[3];
     expected = 0x33 + (uint8_t)(~expected);
 
-    bool ok = (expected == rx[5]);
-    if (!ok) {
-        Serial.printf("RegisterRead(): Checksum invalid (expected: 0x%02X, received: 0x%02X)\n", expected, rx[5]);
-    }
-
-    out_value = (uint32_t)data_bytes[0] | ((uint32_t)data_bytes[1] << 8) | ((uint32_t)data_bytes[2] << 16) |
-                ((uint32_t)data_bytes[3] << 24);
-    return ok;
+    return (expected == checksum_rx);
 }
 
 void V93XX_SPI::ConfigureBlockRead(const uint8_t addresses[], uint8_t num_addresses) {
@@ -285,6 +348,12 @@ void V93XX_SPI::ConfigureBlockRead(const uint8_t addresses[], uint8_t num_addres
 }
 
 void V93XX_SPI::RegisterBlockRead(uint32_t (&values)[], uint8_t num_values) {
+    if (!EnsureReady()) {
+        for (uint8_t i = 0; i < num_values; i++) {
+            values[i] = 0;
+        }
+        return;
+    }
     // IMPORTANT: SPI "block read" is not defined in the datasheet SPI protocol section.
     // The true block/mapped read mechanism is documented under UART.
     // For SPI, we emulate block reads by issuing repeated single-register reads.
