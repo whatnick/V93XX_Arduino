@@ -2,14 +2,14 @@
 #include "V93XX_SPI.h"
 
 const uint8_t ControlAddresses[] = {
-    DSP_ANA0,   // Analog Control 0
-    DSP_ANA1,   // Analog Control 1
-    DSP_CTRL0,  // Digital Control 0
-    DSP_CTRL1,  // Digital Control 1
-    DSP_CTRL2,  // Digital Control 2
-    DSP_CTRL3,  // Digital Control 3
-    DSP_CTRL4,  // Digital Control 4
-    DSP_CTRL5,  // Digital Control 5
+    DSP_ANA0,  // Analog Control 0
+    DSP_ANA1,  // Analog Control 1
+    DSP_CTRL0, // Digital Control 0
+    DSP_CTRL1, // Digital Control 1
+    DSP_CTRL2, // Digital Control 2
+    DSP_CTRL3, // Digital Control 3
+    DSP_CTRL4, // Digital Control 4
+    DSP_CTRL5, // Digital Control 5
 };
 
 const uint8_t CalibrationAddresses[] = {
@@ -37,13 +37,8 @@ const uint8_t CalibrationAddresses[] = {
     EGY_PWRTH,          //	Energy register accumulation threshold. Since the energy register is 46 bits
 };
 
-V93XX_SPI::V93XX_SPI(int cs_pin, SPIClass& spi_bus, uint32_t spi_freq) 
-    : spi_bus(spi_bus),
-      cs_pin(cs_pin),
-      spi_freq(spi_freq),
-      spi_settings(spi_freq, MSBFIRST, SPI_MODE0)
-{
-}
+V93XX_SPI::V93XX_SPI(int cs_pin, SPIClass &spi_bus, uint32_t spi_freq)
+    : spi_bus(spi_bus), cs_pin(cs_pin), spi_freq(spi_freq), spi_settings(spi_freq, MSBFIRST, SPI_MODE0) {}
 
 void V93XX_SPI::Init(WireMode wire_mode, bool initialize_interface) {
     Init(wire_mode, initialize_interface, -1, -1, -1);
@@ -113,10 +108,10 @@ inline void V93XX_SPI::EndTransaction() {
     this->last_op_end_us = micros();
 }
 
-uint8_t V93XX_SPI::CalculateCRC8(const uint8_t* data, size_t length) {
+uint8_t V93XX_SPI::CalculateCRC8(const uint8_t *data, size_t length) {
     // Datasheet "checksum": 0x33 + ~sum (8-bit arithmetic)
     uint8_t checksum = 0;
-    for(size_t i = 0; i < length; i++){
+    for (size_t i = 0; i < length; i++) {
         checksum += data[i];
     }
     return 0x33 + ~checksum;
@@ -196,9 +191,7 @@ void V93XX_SPI::SetHighAddressOffsetEnabled(bool enabled) {
     this->high_address_offset_enabled = enabled;
 }
 
-void V93XX_SPI::RegisterWrite(uint8_t address, uint32_t data) {
-    (void)RegisterWriteChecked(address, data);
-}
+void V93XX_SPI::RegisterWrite(uint8_t address, uint32_t data) { (void)RegisterWriteChecked(address, data); }
 
 bool V93XX_SPI::RegisterWriteChecked(uint8_t address, uint32_t data) {
     ApplyAddressOffsetModeIfNeeded(address);
@@ -243,7 +236,7 @@ bool V93XX_SPI::RegisterReadChecked(uint8_t address, uint32_t &out_value) {
     EndTransaction();
 
     // rx[0] is don't care. Data comes in rx[1..4], checksum in rx[5].
-    uint8_t data_bytes[4] = { rx[1], rx[2], rx[3], rx[4] };
+    uint8_t data_bytes[4] = {rx[1], rx[2], rx[3], rx[4]};
     uint8_t expected = 0;
     expected += tx[0];
     expected += data_bytes[0];
@@ -257,15 +250,12 @@ bool V93XX_SPI::RegisterReadChecked(uint8_t address, uint32_t &out_value) {
         Serial.printf("RegisterRead(): Checksum invalid (expected: 0x%02X, received: 0x%02X)\n", expected, rx[5]);
     }
 
-    out_value = (uint32_t)data_bytes[0] |
-                ((uint32_t)data_bytes[1] << 8) |
-                ((uint32_t)data_bytes[2] << 16) |
+    out_value = (uint32_t)data_bytes[0] | ((uint32_t)data_bytes[1] << 8) | ((uint32_t)data_bytes[2] << 16) |
                 ((uint32_t)data_bytes[3] << 24);
     return ok;
 }
 
-void V93XX_SPI::ConfigureBlockRead(const uint8_t addresses[], uint8_t num_addresses)
-{
+void V93XX_SPI::ConfigureBlockRead(const uint8_t addresses[], uint8_t num_addresses) {
     // NOTE: The chip's datasheet documents "block reading" as a UART feature (address mapping).
     // The SPI section does not define a dedicated block-read command/frame. We keep the mapping
     // registers configuration because it's useful documentation-wise and may be used by UART,
@@ -283,8 +273,8 @@ void V93XX_SPI::ConfigureBlockRead(const uint8_t addresses[], uint8_t num_addres
     this->configured_block_addr_count = copy_count;
 
     // Configure block read addresses in system registers (0x61-0x64)
-    uint8_t const* address_ptr = addresses;
-    for (int blk = 0; blk < 4; blk++){
+    uint8_t const *address_ptr = addresses;
+    for (int blk = 0; blk < 4; blk++) {
         uint32_t combined_address = 0;
         for (int i = 0; (i < 4) && (num_addresses); i++) {
             combined_address |= (*address_ptr++ << (8 * i));
@@ -294,8 +284,7 @@ void V93XX_SPI::ConfigureBlockRead(const uint8_t addresses[], uint8_t num_addres
     }
 }
 
-void V93XX_SPI::RegisterBlockRead(uint32_t (&values)[], uint8_t num_values)
-{
+void V93XX_SPI::RegisterBlockRead(uint32_t (&values)[], uint8_t num_values) {
     // IMPORTANT: SPI "block read" is not defined in the datasheet SPI protocol section.
     // The true block/mapped read mechanism is documented under UART.
     // For SPI, we emulate block reads by issuing repeated single-register reads.
@@ -315,17 +304,18 @@ void V93XX_SPI::RegisterBlockRead(uint32_t (&values)[], uint8_t num_values)
     }
 }
 
-void V93XX_SPI::LoadConfiguration(const V93XX_SPI::ControlRegisters& ctrl, const V93XX_SPI::CalibrationRegisters& calibrations) {
+void V93XX_SPI::LoadConfiguration(const V93XX_SPI::ControlRegisters &ctrl,
+                                  const V93XX_SPI::CalibrationRegisters &calibrations) {
     uint32_t checksum = 0;
-    
+
     // Load control values [0x00 - 0x07]
-    for (int i = 0; i < sizeof(V93XX_SPI::ControlRegisters)/sizeof(uint32_t); i++){
+    for (int i = 0; i < sizeof(V93XX_SPI::ControlRegisters) / sizeof(uint32_t); i++) {
         this->RegisterWrite(ControlAddresses[i], ctrl._array[i]);
         checksum += ctrl._array[i];
     }
 
     // Load calibration values [0x25 - 0x3a]
-    for (int i = 0; i < sizeof(V93XX_SPI::CalibrationRegisters)/sizeof(uint32_t); i++){
+    for (int i = 0; i < sizeof(V93XX_SPI::CalibrationRegisters) / sizeof(uint32_t); i++) {
         this->RegisterWrite(CalibrationAddresses[i], calibrations._array[i]);
         checksum += calibrations._array[i];
     }
