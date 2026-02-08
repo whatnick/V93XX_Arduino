@@ -1,7 +1,16 @@
 #include "V93XX_SPI.h"
 
 // Define pins for SPI communication
-const int V93XX_CS_PIN = 5;  // Chip Select pin
+// ESP32-S3 reference (FluidNC wiki): SPI2/VSPI default (IOMUX) pins
+// http://wiki.fluidnc.com/en/hardware/ESP32-S3_Pin_Reference
+#if defined(ARDUINO_ARCH_ESP32)
+const int V93XX_SCK_PIN  = 12;
+const int V93XX_MOSI_PIN = 11;
+const int V93XX_MISO_PIN = 13;
+const int V93XX_CS_PIN   = 10;
+#else
+const int V93XX_CS_PIN = 5;  // Chip Select pin (adjust for your board)
+#endif
 
 // Create SPI driver instance
 // Default SPI bus (MOSI, MISO, SCK) and 1MHz clock
@@ -13,7 +22,15 @@ void setup()
     Serial.print("Starting V9381 SPI Driver\n");
 
     // Initialize SPI interface
-    v9381.Init();
+    // Select SPI wiring mode:
+    // - FourWire: CS toggles each transaction and enforces >=50us between ops.
+    // - ThreeWire: CS is held low and enforces >=400us SCK-low time before ops.
+#if defined(ARDUINO_ARCH_ESP32)
+    // Explicitly pass SPI pins to use the ESP32-S3 VSPI/IOMUX defaults.
+    v9381.Init(V93XX_SPI::WireMode::FourWire, true, V93XX_SCK_PIN, V93XX_MISO_PIN, V93XX_MOSI_PIN);
+#else
+    v9381.Init(V93XX_SPI::WireMode::FourWire, true);
+#endif
     
     delay(100); // Allow chip to stabilize
 
@@ -70,6 +87,9 @@ void setup()
     v9381.RegisterWrite(SYS_IOCFG0, 0x00000000);
     v9381.RegisterWrite(SYS_IOCFG1, 0x003C3A00);
 
+    // NOTE: The datasheet's "block reading" protocol is documented for UART.
+    // In this SPI driver, RegisterBlockRead() is an emulation (sequential SPI reads).
+    // It's kept here to avoid rewriting the example logic.
     // Configure block read for commonly accessed registers
     v9381.ConfigureBlockRead((const uint8_t[]){
         DSP_DAT_PA1,      // Active power A
