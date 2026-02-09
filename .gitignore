@@ -53,3 +53,10 @@ dkms.conf
 
 #Vscode files
 .vscode/
+
+# Python tooling
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
