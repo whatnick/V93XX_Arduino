@@ -194,7 +194,8 @@ uint32_t V93XX_Raccoon::RegisterRead(uint8_t address) {
     // Read response: marker + 4 data bytes + 1 checksum byte
     uint8_t marker = this->RxBufferPop();  // Skip marker byte (0x7D)
     uint8_t response[4];
-    uint8_t checksum = 0;  // Start fresh - only include response data
+    // Per datasheet: CKSUM = 0x33 + ~(CMD1 + CMD2 + sum of all data bytes)
+    uint8_t checksum = request[1] + request[2];  // Start with CMD1 + CMD2
     uint32_t result = 0;
     for (int i = 0; i < 4; i++) {
         uint8_t data = this->RxBufferPop();
@@ -202,7 +203,7 @@ uint32_t V93XX_Raccoon::RegisterRead(uint8_t address) {
         result |= data << (8 * i);
         response[i] = data;
     }
-    // V9381 checksum: 0x33 + ~(sum of data bytes)
+    // V9381 checksum per datasheet: 0x33 + ~(CMD1 + CMD2 + data bytes)
     checksum = 0x33 + ~(checksum);
     uint8_t checksum_response = this->RxBufferPop();
 
@@ -255,7 +256,8 @@ void V93XX_Raccoon::RegisterBlockRead(uint32_t (&values)[], uint8_t num_values) 
     }
 
     // Read response: for each value, skip marker then read 4 data bytes, then final checksum
-    uint8_t checksum = 0;  // Start fresh - only include response data
+    // Per datasheet: CKSUM = 0x33 + ~(CMD1 + CMD2 + sum of all data bytes)
+    uint8_t checksum = request[1] + request[2];  // Start with CMD1 + CMD2
     for (int i = 0; i < num_values; i++) {
         uint8_t marker = this->RxBufferPop();  // Skip marker byte
         uint8_t response[4];
@@ -265,7 +267,7 @@ void V93XX_Raccoon::RegisterBlockRead(uint32_t (&values)[], uint8_t num_values) 
         }
         values[i] = response[0] | (response[1] << 8) | (response[2] << 16) | (response[3] << 24);
     }
-    // V9381 checksum: 0x33 + ~(sum of all data bytes)
+    // V9381 checksum per datasheet: 0x33 + ~(CMD1 + CMD2 + data bytes)
     checksum = 0x33 + ~(checksum);
 
     // Validate checksum
