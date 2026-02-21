@@ -189,22 +189,23 @@ uint32_t V93XX_Raccoon::RegisterRead(uint8_t address) {
         return 0;
     }
 
-    // Read response
+    // Read response: 4 data bytes + 1 checksum byte
     uint8_t response[4];
-    uint8_t checksum = request[1] + request[2];
+    uint8_t checksum = 0;  // Start fresh - only include response data
     uint32_t result = 0;
     for (int i = 0; i < 4; i++) {
         uint8_t data = this->RxBufferPop();
         checksum += data;
         result |= data << (8 * i);
     }
+    // V9381 checksum: 0x33 + ~(sum of data bytes)
     checksum = 0x33 + ~(checksum);
     uint8_t checksum_response = this->RxBufferPop();
 
-    // TODO:: Proper error handling
+    // Validate checksum
     bool checksum_valid = checksum == checksum_response;
     if (!checksum_valid) {
-        Serial.printf("RegisterRead(): Checksum invalid (expected: h%02X, received: h%02X)\n", checksum,
+        Serial.printf("RegisterRead(): Checksum invalid (expected: 0x%02X, received: 0x%02X)\n", checksum,
                       checksum_response);
     }
     return result;
@@ -247,24 +248,25 @@ void V93XX_Raccoon::RegisterBlockRead(uint32_t (&values)[], uint8_t num_values) 
         return;
     }
 
-    // Read response
-    uint8_t checksum = request[1] + request[2];
+    // Read response: multiple 4-byte values + 1 checksum byte
+    uint8_t checksum = 0;  // Start fresh - only include response data
     for (int i = 0; i < num_values; i++) {
         uint8_t response[4];
-        for (int i = 0; i < 4; i++) {
-            response[i] = this->RxBufferPop();
+        for (int j = 0; j < 4; j++) {
+            response[j] = this->RxBufferPop();
+            checksum += response[j];
         }
         values[i] = response[0] | (response[1] << 8) | (response[2] << 16) | (response[3] << 24);
-        checksum += response[0] + response[1] + response[2] + response[3];
     }
+    // V9381 checksum: 0x33 + ~(sum of all data bytes)
     checksum = 0x33 + ~(checksum);
 
-    // TODO:: Proper error handling
-    uint8_t respose_checksum = this->RxBufferPop();
-    bool checksum_valid = checksum == respose_checksum;
+    // Validate checksum
+    uint8_t response_checksum = this->RxBufferPop();
+    bool checksum_valid = checksum == response_checksum;
     if (!checksum_valid) {
-        Serial.printf("RegisterBlockRead(): Checksum invalid (expected: h%02X, received: h%02X)\n", checksum,
-                      respose_checksum);
+        Serial.printf("RegisterBlockRead(): Checksum invalid (expected: 0x%02X, received: 0x%02X)\n", checksum,
+                      response_checksum);
     }
 }
 
