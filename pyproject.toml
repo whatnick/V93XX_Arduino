@@ -1,11 +1,12 @@
 [project]
 name = "v93xx-arduino"
 version = "0.1.0"
-description = "Arduino library with ancillary Python tooling"
+description = "Arduino library with ancillary Python tooling for V93XX UART/SPI debugging"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
     "logic2-automation>=1.0.11",
+    "pyserial>=3.5",
 ]
 
 [tool.uv]
