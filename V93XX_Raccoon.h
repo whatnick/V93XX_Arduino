@@ -56,7 +56,7 @@ class V93XX_Raccoon {
 
     V93XX_Raccoon(int rx_pin, int tx_pin, HardwareSerial &serial, int device_address);
     void RxReset();
-    void Init();
+    void Init(SerialConfig config = SerialConfig::SERIAL_8O1);
 
     void RegisterWrite(uint8_t address, uint32_t data);
     uint32_t RegisterRead(uint8_t address);
@@ -77,6 +77,7 @@ class V93XX_Raccoon {
     void RxReceive();
     uint8_t RxBufferPop();
     unsigned int RxBufferCount();
+    bool WaitForRx(size_t count, uint32_t timeout_ms);
 
     enum CmdOperation {
         BROADCAST = 0,

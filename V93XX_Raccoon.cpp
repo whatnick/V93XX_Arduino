@@ -62,16 +62,27 @@ void V93XX_Raccoon::RxReset() {
     delayMicroseconds(2150);
 }
 
-void V93XX_Raccoon::Init() {
+void V93XX_Raccoon::Init(SerialConfig config) {
 
-    this->serial.begin(19200, SerialConfig::SERIAL_8O1, this->rx_pin, this->tx_pin);
-
+    pinMode(this->rx_pin, INPUT_PULLUP);
+    this->serial.begin(19200, config, this->rx_pin, this->tx_pin);
     noInterrupts();
     this->serial.onReceive(std::bind(&V93XX_Raccoon::RxReceive, this));
     while (this->serial_rx_buffer.size()) {
         this->serial_rx_buffer.pop();
     }
     interrupts();
+}
+
+bool V93XX_Raccoon::WaitForRx(size_t count, uint32_t timeout_ms) {
+    uint32_t start = millis();
+    while (this->RxBufferCount() < count) {
+        if ((millis() - start) >= timeout_ms) {
+            return false;
+        }
+        delay(1);
+    }
+    return true;
 }
 
 void V93XX_Raccoon::RxReceive() {
@@ -134,8 +145,9 @@ void V93XX_Raccoon::RegisterWrite(uint8_t address, uint32_t data) {
     this->serial.write(payload, sizeof(payload) / sizeof(uint8_t));
 
     // wait for response
-    while (this->RxBufferCount() < 1) {
-        delay(1);
+    if (!this->WaitForRx(1, 50)) {
+        Serial.println("RegisterWrite(): timeout waiting for checksum response");
+        return;
     }
 
     // Read response
@@ -172,8 +184,9 @@ uint32_t V93XX_Raccoon::RegisterRead(uint8_t address) {
     this->serial.write(request, sizeof(request) / sizeof(uint8_t));
 
     // wait for response
-    while (this->RxBufferCount() < 5) {
-        delay(1);
+    if (!this->WaitForRx(5, 50)) {
+        Serial.println("RegisterRead(): timeout waiting for response");
+        return 0;
     }
 
     // Read response
@@ -229,8 +242,9 @@ void V93XX_Raccoon::RegisterBlockRead(uint32_t (&values)[], uint8_t num_values) 
     this->serial.write(request, sizeof(request) / sizeof(uint8_t));
 
     // wait for response
-    while (this->RxBufferCount() < ((4 * num_values) + 1)) {
-        delay(1);
+    if (!this->WaitForRx((4 * num_values) + 1, 100)) {
+        Serial.println("RegisterBlockRead(): timeout waiting for response");
+        return;
     }
 
     // Read response

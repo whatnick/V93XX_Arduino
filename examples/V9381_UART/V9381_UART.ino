@@ -20,6 +20,70 @@ const int V93XX_ADDR1_PIN = 10;   // Adjust for your board
 
 const int V93XX_DEVICE_ADDRESS = 0x00;
 
+// Set to 1 to emit a known UART pattern for pin verification.
+#define V93XX_UART_PIN_TEST 1
+// Set to 1 to run pin swap/config probe sequences.
+#define V93XX_UART_PROBE 0
+// Set to 1 to run minimal UART read tests only.
+#define V93XX_UART_DEBUG_MINIMAL 1
+// Set to 1 to toggle A0/A1 so logic analyzer confirms address pin mapping.
+#define V93XX_UART_ADDR_BLINK 1
+
+#if V93XX_UART_PROBE
+static void RunUartProbe(int rx_pin, int tx_pin, const char *label) {
+    Serial.printf("\n=== UART probe: %s (RX=%d, TX=%d) ===\n", label, rx_pin, tx_pin);
+
+    V93XX_Raccoon probe(rx_pin, tx_pin, Serial1, V93XX_DEVICE_ADDRESS);
+
+    v9381.RxReset();
+
+#if V93XX_UART_PIN_TEST
+    Serial1.begin(19200, SerialConfig::SERIAL_8N1, V93XX_UART_RX_PIN, V93XX_UART_TX_PIN);
+    Serial.println("UART pin test (8N1): sending 0x55 pattern on TX");
+    for (int i = 0; i < 10; i++) {
+        Serial1.write(0x55);
+        delay(5);
+    }
+    Serial1.flush();
+    Serial.println("UART pin test complete");
+    delay(10);
+#endif
+
+    v9381.Init();
+
+#if V93XX_UART_PROBE
+    RunUartProbe(V93XX_UART_RX_PIN, V93XX_UART_TX_PIN, "normal");
+    RunUartProbe(V93XX_UART_TX_PIN, V93XX_UART_RX_PIN, "swapped");
+#endif
+
+    const UartConfigOption configs[] = {
+        {SerialConfig::SERIAL_8O1, "8O1"},
+        {SerialConfig::SERIAL_8E1, "8E1"},
+        {SerialConfig::SERIAL_8N1, "8N1"},
+    };
+
+    for (const auto &option : configs) {
+        Serial.printf("\nConfig %s\n", option.name);
+        probe.RxReset();
+        probe.Init(option.config);
+        delay(2);
+
+        for (int addr = 0; addr < 4; addr++) {
+            ConfigureUartAddressPins(addr);
+            Serial.printf("  Address 0x%02X\n", addr);
+
+            uint32_t version = probe.RegisterRead(SYS_VERSION);
+            Serial.printf("    SYS_VERSION: 0x%08X\n", version);
+
+            uint32_t intsts = probe.RegisterRead(SYS_INTSTS);
+            Serial.printf("    SYS_INTSTS:  0x%08X\n", intsts);
+
+            delay(5);
+        }
+    }
+}
+#endif
+
 V93XX_Raccoon v9381(V93XX_UART_RX_PIN, V93XX_UART_TX_PIN, Serial1, V93XX_DEVICE_ADDRESS);
 
 static void ConfigureUartAddressPins(int address) {
@@ -28,6 +92,14 @@ static void ConfigureUartAddressPins(int address) {
 
     digitalWrite(V93XX_ADDR0_PIN, (address & 0x01) ? HIGH : LOW);
     digitalWrite(V93XX_ADDR1_PIN, (address & 0x02) ? HIGH : LOW);
+}
+
+static void BlinkUartAddressPins() {
+    for (int addr = 0; addr < 4; addr++) {
+        ConfigureUartAddressPins(addr);
+        Serial.printf("Blink A1/A0 = %d%d\n", (addr & 0x02) ? 1 : 0, (addr & 0x01) ? 1 : 0);
+        delay(50);
+    }
 }
 
 static void ReleaseUartAddressPinsForSpi() {
@@ -42,17 +114,32 @@ void setup() {
 
     ConfigureUartAddressPins(V93XX_DEVICE_ADDRESS);
 
+#if V93XX_UART_ADDR_BLINK
+    BlinkUartAddressPins();
+    ConfigureUartAddressPins(V93XX_DEVICE_ADDRESS);
+#endif
+
     // NOTE: If you later switch to SPI in the same sketch, call
     // ReleaseUartAddressPinsForSpi() before SPI.begin().
 
     v9381.RxReset();
     v9381.Init();
 
+#if V93XX_UART_PROBE
+    RunUartProbe(V93XX_UART_RX_PIN, V93XX_UART_TX_PIN, "normal");
+    RunUartProbe(V93XX_UART_TX_PIN, V93XX_UART_RX_PIN, "swapped");
+#endif
+
     uint32_t register_value = v9381.RegisterRead(SYS_INTSTS);
     Serial.printf("Interrupt Register: 0x%08X\n", register_value);
 
     register_value = v9381.RegisterRead(SYS_VERSION);
     Serial.printf("System Version: 0x%08X\n", register_value);
+
+#if V93XX_UART_DEBUG_MINIMAL
+    Serial.println("UART minimal debug mode: skipping configuration load");
+    return;
+#endif
 
     v9381.LoadConfiguration(
         (const V93XX_Raccoon::ControlRegisters &){
@@ -110,6 +197,10 @@ void setup() {
 }
 
 void loop() {
+#if V93XX_UART_DEBUG_MINIMAL
+    delay(1000);
+    return;
+#endif
     uint32_t values[10] = {0};
     v9381.RegisterBlockRead(values, 10);
 

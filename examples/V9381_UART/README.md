@@ -97,3 +97,16 @@ const int V93XX_ADDR1_PIN = 10;    // Change as needed
 
 ### Modify Block Read Registers
 Edit the `ConfigureBlockRead()` call in `setup()` to read different registers according to your application needs.
+
+## Debugging Summary (UART)
+
+This section summarizes the UART bring-up debugging steps and findings to date.
+
+- SPI wiring was verified with the V9381 SPI example and Saleae capture (CS/SCK/MOSI/MISO mapped and active).
+- UART capture script was updated to start capture before reset and export Async Serial decodes for RX/TX.
+- UART TX activity is present on the expected line, but no valid RX response frames have been observed.
+- A0/A1 address lines were floating at first, then tied to GND; with A0/A1 low, the address is fixed at 0x00.
+- Even with A0/A1 tied low and UART traffic sent, RX still shows only noise/0xFF bytes (no valid response).
+
+Current hypothesis: UART framing/timing (auto-baud or parity) or RX reset timing may still be incorrect.
+Next steps include trying explicit auto-baud enable, extended RX reset timing, and 8N1 preamble before 8O1 commands.
