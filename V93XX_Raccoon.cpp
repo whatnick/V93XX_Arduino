@@ -143,6 +143,7 @@ void V93XX_Raccoon::RegisterWrite(uint8_t address, uint32_t data) {
 
     // Transmit payload
     this->serial.write(payload, sizeof(payload) / sizeof(uint8_t));
+    this->serial.flush();
 
     // wait for response
     if (!this->WaitForRx(1, 50)) {
@@ -182,14 +183,16 @@ uint32_t V93XX_Raccoon::RegisterRead(uint8_t address) {
 
     // Transmit request
     this->serial.write(request, sizeof(request) / sizeof(uint8_t));
+    this->serial.flush();
 
-    // wait for response (increased timeout for slow ASIC response)
-    if (!this->WaitForRx(5, 100)) {
+    // wait for response (6 bytes: marker + 4 data + checksum)
+    if (!this->WaitForRx(6, 100)) {
         Serial.println("RegisterRead(): timeout waiting for response");
         return 0;
     }
 
-    // Read response: 4 data bytes + 1 checksum byte
+    // Read response: marker + 4 data bytes + 1 checksum byte
+    uint8_t marker = this->RxBufferPop();  // Skip marker byte (0x7D)
     uint8_t response[4];
     uint8_t checksum = 0;  // Start fresh - only include response data
     uint32_t result = 0;
@@ -204,14 +207,12 @@ uint32_t V93XX_Raccoon::RegisterRead(uint8_t address) {
     uint8_t checksum_response = this->RxBufferPop();
 
     // Debug output
-    Serial.printf("RegisterRead(0x%02X): response=[0x%02X 0x%02X 0x%02X 0x%02X] checksum_calc=0x%02X checksum_recv=0x%02X\n",
-                  address, response[0], response[1], response[2], response[3], checksum, checksum_response);
+    Serial.printf("RegisterRead(0x%02X): marker=0x%02X data=[0x%02X 0x%02X 0x%02X 0x%02X] calc=0x%02X recv=0x%02X",
+                  address, marker, response[0], response[1], response[2], response[3], checksum, checksum_response);
 
     // Validate checksum
     bool checksum_valid = checksum == checksum_response;
-    if (!checksum_valid) {
-        Serial.printf("  → Checksum MISMATCH (expected: 0x%02X, received: 0x%02X)\n", checksum, checksum_response);
-    }
+    Serial.printf(" %s\n", checksum_valid ? "✓" : "✗");
     return result;
 }
 
@@ -245,16 +246,18 @@ void V93XX_Raccoon::RegisterBlockRead(uint32_t (&values)[], uint8_t num_values) 
 
     // Transmit request
     this->serial.write(request, sizeof(request) / sizeof(uint8_t));
+    this->serial.flush();
 
-    // wait for response (increased timeout for slow ASIC response)
-    if (!this->WaitForRx((4 * num_values) + 1, 200)) {
+    // wait for response (6 bytes per value: marker + 4 data + checksum)
+    if (!this->WaitForRx((6 * num_values) + 1, 200)) {
         Serial.println("RegisterBlockRead(): timeout waiting for response");
         return;
     }
 
-    // Read response: multiple 4-byte values + 1 checksum byte
+    // Read response: for each value, skip marker then read 4 data bytes, then final checksum
     uint8_t checksum = 0;  // Start fresh - only include response data
     for (int i = 0; i < num_values; i++) {
+        uint8_t marker = this->RxBufferPop();  // Skip marker byte
         uint8_t response[4];
         for (int j = 0; j < 4; j++) {
             response[j] = this->RxBufferPop();
