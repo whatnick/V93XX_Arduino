@@ -53,3 +53,16 @@ dkms.conf
 
 #Vscode files
 .vscode/
+
+# Python tooling
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Saleae captures
+tools/captures/
+
+# Local build files
+build/

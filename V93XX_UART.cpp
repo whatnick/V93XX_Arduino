@@ -1,5 +1,5 @@
 
-#include "V93XX_Raccoon.h"
+#include "V93XX_UART.h"
 
 const uint8_t ControlAddresses[] = {
     DSP_ANA0,  // Analog Control 0
@@ -37,7 +37,7 @@ const uint8_t CalibrationAddresses[] = {
     EGY_PWRTH,          //	Energy register accumulation threshold. Since the energy register is 46 bits
 };
 
-V93XX_Raccoon::V93XX_Raccoon(int rx_pin, int tx_pin, HardwareSerial &serial, int device_address)
+V93XX_UART::V93XX_UART(int rx_pin, int tx_pin, HardwareSerial &serial, int device_address)
     : serial(serial), serial_rx_buffer(std::list<uint8_t>(65)) // 65bytes = 16x u32 (block read) + u8 (CRC)
 {
     this->device_address = device_address;
@@ -49,7 +49,7 @@ V93XX_Raccoon::V93XX_Raccoon(int rx_pin, int tx_pin, HardwareSerial &serial, int
     }
 }
 
-void V93XX_Raccoon::RxReset() {
+void V93XX_UART::RxReset() {
     pinMode(this->tx_pin, OUTPUT);
 
     // TX pin for UART , RX pin for ASIC need to be held low
@@ -62,19 +62,31 @@ void V93XX_Raccoon::RxReset() {
     delayMicroseconds(2150);
 }
 
-void V93XX_Raccoon::Init() {
+void V93XX_UART::Init(SerialConfig config, ChecksumMode checksum_mode) {
+    this->checksum_mode = checksum_mode;
 
-    this->serial.begin(19200, SerialConfig::SERIAL_8O1, this->rx_pin, this->tx_pin);
-
+    pinMode(this->rx_pin, INPUT_PULLUP);
+    this->serial.begin(19200, config, this->rx_pin, this->tx_pin);
     noInterrupts();
-    this->serial.onReceive(std::bind(&V93XX_Raccoon::RxReceive, this));
+    this->serial.onReceive(std::bind(&V93XX_UART::RxReceive, this));
     while (this->serial_rx_buffer.size()) {
         this->serial_rx_buffer.pop();
     }
     interrupts();
 }
 
-void V93XX_Raccoon::RxReceive() {
+bool V93XX_UART::WaitForRx(size_t count, uint32_t timeout_ms) {
+    uint32_t start = millis();
+    while (this->RxBufferCount() < count) {
+        if ((millis() - start) >= timeout_ms) {
+            return false;
+        }
+        delay(1);
+    }
+    return true;
+}
+
+void V93XX_UART::RxReceive() {
     while (this->serial.available() > 0) {
         uint8_t data = this->serial.read();
         noInterrupts();
@@ -85,7 +97,7 @@ void V93XX_Raccoon::RxReceive() {
     }
 }
 
-unsigned int V93XX_Raccoon::RxBufferCount() {
+unsigned int V93XX_UART::RxBufferCount() {
     unsigned int count = 0;
     noInterrupts();
     count = this->serial_rx_buffer.size();
@@ -93,7 +105,7 @@ unsigned int V93XX_Raccoon::RxBufferCount() {
     return count;
 }
 
-uint8_t V93XX_Raccoon::RxBufferPop() {
+uint8_t V93XX_UART::RxBufferPop() {
     uint8_t data = 0;
     noInterrupts();
     data = this->serial_rx_buffer.front();
@@ -102,9 +114,7 @@ uint8_t V93XX_Raccoon::RxBufferPop() {
     return data;
 }
 
-void V93XX_Raccoon::RegisterWrite(uint8_t address, uint32_t data) {
-    uint8_t i;
-
+void V93XX_UART::RegisterWrite(uint8_t address, uint32_t data) {
     const int num_registers = 1;
     // Described in Section 7.4 of Datasheet
     uint8_t payload[8] = {// Header
@@ -132,26 +142,32 @@ void V93XX_Raccoon::RegisterWrite(uint8_t address, uint32_t data) {
 
     // Transmit payload
     this->serial.write(payload, sizeof(payload) / sizeof(uint8_t));
+    this->serial.flush();
 
     // wait for response
-    while (this->RxBufferCount() < 1) {
-        delay(1);
+    if (!this->WaitForRx(1, 50)) {
+        Serial.println("RegisterWrite(): timeout waiting for checksum response");
+        return;
     }
 
     // Read response
     uint8_t checksum_response = this->RxBufferPop();
 
-    // TODO:: Proper error handling
+    // Check and report CRC
     bool checksum_valid = checksum_response == checksum;
-    if (!checksum_valid) {
-        Serial.printf("RegisterWrite(): Checksum invalid (expected: h%02X, received: h%02X)\n", checksum,
-                      checksum_response);
+    Serial.printf("RegisterWrite(0x%02X): CRC expected=0x%02X received=0x%02X %s", address, checksum, checksum_response,
+                  checksum_valid ? "✓" : "✗");
+
+    if (!checksum_valid && this->checksum_mode == ChecksumMode::Clean) {
+        Serial.println(" - ERROR: CRC mismatch! (Clean mode)");
+    } else if (!checksum_valid && this->checksum_mode == ChecksumMode::Dirty) {
+        Serial.println(" - WARNING: CRC mismatch! (Dirty mode - proceeding)");
+    } else {
+        Serial.println();
     }
 }
 
-uint32_t V93XX_Raccoon::RegisterRead(uint8_t address) {
-    uint8_t i;
-
+uint32_t V93XX_UART::RegisterRead(uint8_t address) {
     const int num_registers = 1;
     // Described in Section 7.3 of Datasheet
     uint8_t request[4] = {// Header
@@ -170,34 +186,49 @@ uint32_t V93XX_Raccoon::RegisterRead(uint8_t address) {
 
     // Transmit request
     this->serial.write(request, sizeof(request) / sizeof(uint8_t));
+    this->serial.flush();
 
-    // wait for response
-    while (this->RxBufferCount() < 5) {
-        delay(1);
+    // wait for response (6 bytes: marker + 4 data + checksum)
+    if (!this->WaitForRx(6, 100)) {
+        Serial.println("RegisterRead(): timeout waiting for response");
+        return 0;
     }
 
-    // Read response
+    // Read response: marker + 4 data bytes + 1 checksum byte
+    uint8_t marker = this->RxBufferPop(); // Skip marker byte (0x7D)
     uint8_t response[4];
-    uint8_t checksum = request[1] + request[2];
+    // Per datasheet: CKSUM = 0x33 + ~(CMD1 + CMD2 + sum of all data bytes)
+    uint8_t checksum = request[1] + request[2]; // Start with CMD1 + CMD2
     uint32_t result = 0;
     for (int i = 0; i < 4; i++) {
         uint8_t data = this->RxBufferPop();
         checksum += data;
         result |= data << (8 * i);
+        response[i] = data;
     }
+    // V9381 checksum per datasheet: 0x33 + ~(CMD1 + CMD2 + data bytes)
     checksum = 0x33 + ~(checksum);
     uint8_t checksum_response = this->RxBufferPop();
 
-    // TODO:: Proper error handling
+    // Debug output
     bool checksum_valid = checksum == checksum_response;
-    if (!checksum_valid) {
-        Serial.printf("RegisterRead(): Checksum invalid (expected: h%02X, received: h%02X)\n", checksum,
-                      checksum_response);
+    Serial.printf(
+        "RegisterRead(0x%02X): marker=0x%02X data=[0x%02X 0x%02X 0x%02X 0x%02X] CRC expected=0x%02X received=0x%02X %s",
+        address, marker, response[0], response[1], response[2], response[3], checksum, checksum_response,
+        checksum_valid ? "✓" : "✗");
+
+    if (!checksum_valid && this->checksum_mode == ChecksumMode::Clean) {
+        Serial.println(" - ERROR: CRC mismatch! (Clean mode)");
+    } else if (!checksum_valid && this->checksum_mode == ChecksumMode::Dirty) {
+        Serial.println(" - WARNING: CRC mismatch! (Dirty mode - returning data)");
+    } else {
+        Serial.println();
     }
+
     return result;
 }
 
-void V93XX_Raccoon::ConfigureBlockRead(const uint8_t addresses[], uint8_t num_addresses) {
+void V93XX_UART::ConfigureBlockRead(const uint8_t addresses[], uint8_t num_addresses) {
     uint8_t const *address_ptr = addresses;
     for (int blk = 0; blk < 4; blk++) {
         uint32_t combined_address = 0;
@@ -209,7 +240,7 @@ void V93XX_Raccoon::ConfigureBlockRead(const uint8_t addresses[], uint8_t num_ad
     }
 }
 
-void V93XX_Raccoon::RegisterBlockRead(uint32_t (&values)[], uint8_t num_values) {
+void V93XX_UART::RegisterBlockRead(uint32_t (&values)[], uint8_t num_values) {
     // Described in Section 7.5 of Datasheet
     uint8_t request[4] = {// Header
                           0x7d,
@@ -227,45 +258,57 @@ void V93XX_Raccoon::RegisterBlockRead(uint32_t (&values)[], uint8_t num_values) 
 
     // Transmit request
     this->serial.write(request, sizeof(request) / sizeof(uint8_t));
+    this->serial.flush();
 
-    // wait for response
-    while (this->RxBufferCount() < ((4 * num_values) + 1)) {
-        delay(1);
+    // wait for response (6 bytes per value: marker + 4 data + checksum)
+    if (!this->WaitForRx((6 * num_values) + 1, 200)) {
+        Serial.println("RegisterBlockRead(): timeout waiting for response");
+        return;
     }
 
-    // Read response
-    uint8_t checksum = request[1] + request[2];
+    // Read response: for each value, skip marker then read 4 data bytes, then final checksum
+    // Per datasheet: CKSUM = 0x33 + ~(CMD1 + CMD2 + sum of all data bytes)
+    uint8_t checksum = request[1] + request[2]; // Start with CMD1 + CMD2
     for (int i = 0; i < num_values; i++) {
+        (void)this->RxBufferPop(); // Skip marker byte
         uint8_t response[4];
-        for (int i = 0; i < 4; i++) {
-            response[i] = this->RxBufferPop();
+        for (int j = 0; j < 4; j++) {
+            response[j] = this->RxBufferPop();
+            checksum += response[j];
         }
         values[i] = response[0] | (response[1] << 8) | (response[2] << 16) | (response[3] << 24);
-        checksum += response[0] + response[1] + response[2] + response[3];
     }
+    // V9381 checksum per datasheet: 0x33 + ~(CMD1 + CMD2 + data bytes)
     checksum = 0x33 + ~(checksum);
 
-    // TODO:: Proper error handling
-    uint8_t respose_checksum = this->RxBufferPop();
-    bool checksum_valid = checksum == respose_checksum;
-    if (!checksum_valid) {
-        Serial.printf("RegisterBlockRead(): Checksum invalid (expected: h%02X, received: h%02X)\n", checksum,
-                      respose_checksum);
+    // Validate checksum
+    uint8_t response_checksum = this->RxBufferPop();
+    bool checksum_valid = checksum == response_checksum;
+
+    Serial.printf("RegisterBlockRead(%d values): CRC expected=0x%02X received=0x%02X %s", num_values, checksum,
+                  response_checksum, checksum_valid ? "✓" : "✗");
+
+    if (!checksum_valid && this->checksum_mode == ChecksumMode::Clean) {
+        Serial.println(" - ERROR: CRC mismatch! (Clean mode)");
+    } else if (!checksum_valid && this->checksum_mode == ChecksumMode::Dirty) {
+        Serial.println(" - WARNING: CRC mismatch! (Dirty mode - data captured)");
+    } else {
+        Serial.println();
     }
 }
 
-void V93XX_Raccoon::LoadConfiguration(const V93XX_Raccoon::ControlRegisters &ctrl,
-                                      const V93XX_Raccoon::CalibrationRegisters &calibrations) {
+void V93XX_UART::LoadConfiguration(const V93XX_UART::ControlRegisters &ctrl,
+                                   const V93XX_UART::CalibrationRegisters &calibrations) {
     uint32_t checksum = 0;
 
     // Load control values [0x00 - 0x07]
-    for (int i = 0; i < sizeof(V93XX_Raccoon::ControlRegisters) / sizeof(uint32_t); i++) {
+    for (int i = 0; i < sizeof(V93XX_UART::ControlRegisters) / sizeof(uint32_t); i++) {
         this->RegisterWrite(ControlAddresses[i], ctrl._array[i]);
         checksum += ctrl._array[i];
     }
 
     // Load calibration values [0x25 - 0x3a]
-    for (int i = 0; i < sizeof(V93XX_Raccoon::CalibrationRegisters) / sizeof(uint32_t); i++) {
+    for (int i = 0; i < sizeof(V93XX_UART::CalibrationRegisters) / sizeof(uint32_t); i++) {
         this->RegisterWrite(CalibrationAddresses[i], calibrations._array[i]);
         checksum += calibrations._array[i];
     }
@@ -276,4 +319,13 @@ void V93XX_Raccoon::LoadConfiguration(const V93XX_Raccoon::ControlRegisters &ctr
     // Calculate DSP_CFG_CKSUM (0x28) to ensure this is the case
     checksum = 0xFFFFFFFF - checksum;
     this->RegisterWrite(DSP_CFG_CKSUM, checksum);
+}
+
+void V93XX_UART::SetChecksumMode(ChecksumMode mode) {
+    this->checksum_mode = mode;
+    if (mode == ChecksumMode::Dirty) {
+        Serial.println("Checksum Mode: Dirty (skip CRC validation, show expected vs received)");
+    } else {
+        Serial.println("Checksum Mode: Clean (enforce CRC validation)");
+    }
 }

@@ -1,14 +1,19 @@
-#ifndef V93XX_RACCOON_H__
-#define V93XX_RACCOON_H__
+#ifndef V93XX_UART_H__
+#define V93XX_UART_H__
 
-#include "V93XX_Raccoon_registers.h"
+#include "V93XX_Registers.h"
 #include <Arduino.h>
 #include <list>
 #include <queue>
 
-class V93XX_Raccoon {
+class V93XX_UART {
   public:
-    __attribute__((packed)) struct ControlRegisters {
+    enum class ChecksumMode : uint8_t {
+        Dirty = 0,
+        Clean = 1,
+    };
+
+    struct __attribute__((packed)) ControlRegisters {
         union {
             uint32_t _array[8];
             struct {
@@ -24,7 +29,7 @@ class V93XX_Raccoon {
         };
     };
 
-    __attribute__((packed)) struct CalibrationRegisters {
+    struct __attribute__((packed)) CalibrationRegisters {
         union {
             uint32_t _array[22];
             struct {
@@ -54,9 +59,9 @@ class V93XX_Raccoon {
         };
     };
 
-    V93XX_Raccoon(int rx_pin, int tx_pin, HardwareSerial &serial, int device_address);
+    V93XX_UART(int rx_pin, int tx_pin, HardwareSerial &serial, int device_address);
     void RxReset();
-    void Init();
+    void Init(SerialConfig config = SerialConfig::SERIAL_8O1, ChecksumMode checksum_mode = ChecksumMode::Dirty);
 
     void RegisterWrite(uint8_t address, uint32_t data);
     uint32_t RegisterRead(uint8_t address);
@@ -66,17 +71,21 @@ class V93XX_Raccoon {
 
     void LoadConfiguration(const ControlRegisters &ctrl, const CalibrationRegisters &calibrations);
 
+    void SetChecksumMode(ChecksumMode mode);
+
   private:
     HardwareSerial &serial;
     int device_address;
     int tx_pin;
     int rx_pin;
+    ChecksumMode checksum_mode = ChecksumMode::Dirty;
 
     std::queue<uint8_t, std::list<uint8_t>> serial_rx_buffer{std::queue<uint8_t, std::list<uint8_t>>()};
 
     void RxReceive();
     uint8_t RxBufferPop();
     unsigned int RxBufferCount();
+    bool WaitForRx(size_t count, uint32_t timeout_ms);
 
     enum CmdOperation {
         BROADCAST = 0,

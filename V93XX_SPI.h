@@ -1,7 +1,7 @@
 #ifndef V93XX_SPI_H__
 #define V93XX_SPI_H__
 
-#include "V93XX_Raccoon_registers.h"
+#include "V93XX_Registers.h"
 #include <Arduino.h>
 #include <SPI.h>
 
@@ -24,7 +24,7 @@ class V93XX_SPI {
     };
 
     // Reuse register structures from UART version for compatibility
-    __attribute__((packed)) struct ControlRegisters {
+    struct __attribute__((packed)) ControlRegisters {
         union {
             uint32_t _array[8];
             struct {
@@ -40,7 +40,7 @@ class V93XX_SPI {
         };
     };
 
-    __attribute__((packed)) struct CalibrationRegisters {
+    struct __attribute__((packed)) CalibrationRegisters {
         union {
             uint32_t _array[22];
             struct {
@@ -74,7 +74,7 @@ class V93XX_SPI {
      * @brief Constructor for V9381 SPI driver
      * @param cs_pin Chip select pin number
      * @param spi_bus Reference to SPI bus (default SPIClass)
-    * @param spi_freq SPI clock frequency in Hz (default 400kHz)
+     * @param spi_freq SPI clock frequency in Hz (default 400kHz)
      */
     V93XX_SPI(int cs_pin, SPIClass &spi_bus = SPI, uint32_t spi_freq = 400000);
 
@@ -97,7 +97,6 @@ class V93XX_SPI {
               int8_t miso_pin, int8_t mosi_pin);
 
     void SetChecksumMode(ChecksumMode mode);
-
 
     /**
      * @brief Perform the SPI interface initialization sequence (write magic to 0x7F).
