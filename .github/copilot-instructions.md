@@ -670,9 +670,28 @@ jobs:
       
       - name: Setup Arduino CLI
         uses: arduino/setup-arduino-cli@v1
+
+      - name: Install clang-format
+        run: choco install llvm -y
+
+      - name: Run clang-format check
+        run: |
+          $files = Get-ChildItem -Recurse -Include *.h, *.cpp, *.ino | Where-Object { $_.FullName -notmatch "\\build\\" }
+          if ($files.Count -eq 0) { throw "No source files found for clang-format check" }
+          clang-format --dry-run --Werror @($files.FullName)
       
       - name: Install ESP32 core
         run: arduino-cli core install esp32:esp32
+
+      - name: Compile all examples
+        run: |
+          $sketches = Get-ChildItem examples -Filter "*.ino" -Recurse
+          foreach ($sketch in $sketches) {
+            $outDir = Join-Path "build\\ci_compile" $sketch.BaseName
+            Write-Host "Compiling $($sketch.FullName)"
+            arduino-cli compile --fqbn esp32:esp32:esp32s3 $sketch.FullName --output-dir $outDir
+            if ($LASTEXITCODE -ne 0) { throw "Compile failed: $($sketch.FullName)" }
+          }
       
       - name: Setup Python
         uses: actions/setup-python@v4
