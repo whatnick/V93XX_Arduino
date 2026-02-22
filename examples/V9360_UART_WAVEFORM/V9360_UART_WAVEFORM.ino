@@ -1,5 +1,4 @@
 #include "V93XX_UART.h"
-#include <cstring>
 
 const int V93XX_TX_PIN = 16;
 const int V93XX_RX_PIN = 15;
@@ -72,63 +71,22 @@ void loop() {
 
     Serial.printf("Configure Waveform capture:\n");
 
-    // Clear interrupt status of waveform capture
-    raccoon.RegisterWrite(SYS_INTSTS, SYS_INTSTS_WAVEOV | SYS_INTSTS_WAVESTORE | SYS_INTSTS_WAVEUPD);
-    raccoon.RegisterWrite(DSP_CTRL5,
-                          // Transmit Starting by manual, stops on max cycle
-                          (0 << DSP_CTRL5_DMAMODE_Pos) & DSP_CTRL5_DMAMODE_Msk
-                              // Enable Manual
-                              | DSP_CTRL5_DMA_CTRL_ENABLE
-                              // Source: Channel U, HPF: None
-                              | DSP_CTRL5_WAVE_U
-                              // Wave length, 1 cycle
-                              | (0 << DSP_CTRL5_WAVE_LEN_Pos) & DSP_CTRL5_WAVE_LEN_Msk
-                              // Manual trigger mode
-                              | DSP_CTRL5_WAVEMEM_MODE_MANUAL_SINGLE
-                              // Clear previous waveform read pointer
-                              | DSP_CTRL5_WAVE_ADDR_CLR
-                              // Issue manual read now
-                              | DSP_CTRL5_TRIG_MANUAL);
+    const uint32_t ctrl5 =
+        // Transmit Starting by manual, stops on max cycle
+        ((0 << DSP_CTRL5_DMAMODE_Pos) & DSP_CTRL5_DMAMODE_Msk)
+        // Enable Manual
+        | DSP_CTRL5_DMA_CTRL_ENABLE
+        // Source: Channel U, HPF: None
+        | DSP_CTRL5_WAVE_U
+        // Wave length, 1 cycle
+        | ((0 << DSP_CTRL5_WAVE_LEN_Pos) & DSP_CTRL5_WAVE_LEN_Msk)
+        // Manual trigger mode
+        | DSP_CTRL5_WAVEMEM_MODE_MANUAL_SINGLE;
 
-    // 9bit WAVESTORE_CNT can be used to see progress of capture, or IO assigned to interrupt, or polling on register
-    // read.
-    uint16_t wavestore_cnt =
-        (raccoon.RegisterRead(SYS_MISC) & SYS_MISC_WAVESTORE_CNT_Msk) >> SYS_MISC_WAVESTORE_CNT_Pos;
-    Serial.printf("WAVESTORE_CNT = %d\n", wavestore_cnt);
-
-    // Poll on interrupt status (SYS_INTSTS_WAVESTORE | SYS_INTSTS_WAVEOV)
-    while (uint32_t sys_intsts = raccoon.RegisterRead(SYS_INTSTS)) {
-        if (sys_intsts & (SYS_INTSTS_WAVEOV | SYS_INTSTS_WAVESTORE)) {
-            Serial.printf("SYS_INTSTS = (");
-            if (sys_intsts & SYS_INTSTS_WAVEOV)
-                Serial.printf(" SYS_INTSTS_WAVEOV ");
-            if (sys_intsts & SYS_INTSTS_WAVESTORE)
-                Serial.printf(" SYS_INTSTS_WAVESTORE ");
-            if (sys_intsts & SYS_INTSTS_WAVEUPD)
-                Serial.printf(" SYS_INTSTS_WAVEUPD ");
-            Serial.printf(")\n");
-            break;
-        }
-    }
-
-    // Configure block read to read out 16 words of waveform data per read
-    uint32_t block_read_addresses = (DAT_WAVE << 24) | (DAT_WAVE << 16) | (DAT_WAVE << 8) | DAT_WAVE;
-    raccoon.RegisterWrite(SYS_BLK_ADDR0, block_read_addresses);
-    raccoon.RegisterWrite(SYS_BLK_ADDR1, block_read_addresses);
-    raccoon.RegisterWrite(SYS_BLK_ADDR2, block_read_addresses);
-    raccoon.RegisterWrite(SYS_BLK_ADDR3, block_read_addresses);
-
-    // Issue block reads and save result
     const int waveform_size = sizeof(waveform_buffer) / sizeof(waveform_buffer[0]);
-    int index = 0;
-    int remaining = waveform_size;
-    while (remaining > 0) {
-        int read_size = std::min(16, remaining);
-        uint32_t data[16];
-        raccoon.RegisterBlockRead(data, read_size);
-        std::memcpy(&waveform_buffer[index], data, read_size * sizeof(uint32_t));
-        remaining -= read_size;
-        index += read_size;
+    bool capture_ok = raccoon.CaptureWaveform(waveform_buffer, waveform_size, ctrl5, 1000, 16);
+    if (!capture_ok) {
+        Serial.println("Waveform capture failed or overflowed");
     }
 
     // Dump waveform data

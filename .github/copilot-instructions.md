@@ -25,6 +25,8 @@ For overview, getting started, and integration guidance, refer to the consolidat
 **For Copilot integration:** See [docs/COPILOT.md](../docs/COPILOT.md)  
 **For this detailed workflow:** Continue reading this file
 
+Naming convention note: use CamelCase for public APIs (for example `CaptureWaveform`).
+
 ---
 
 ## Prerequisites & Environment Setup

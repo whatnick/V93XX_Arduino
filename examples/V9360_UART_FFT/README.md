@@ -7,6 +7,17 @@ This example builds on the Waveform buffer example by performing on-board ESP-32
 
 With the code uploaded and running, waveform buffer is passed through FFT process repeatedly and the console lists the harmonics of 50Hz/60Hz (including the main) detected and their amplitudes.
 
+## Targets
+
+This sketch supports multiple ASIC + comms combinations. Set `V93XX_FFT_TARGET` at the top of
+[examples/V9360_UART_FFT/V9360_UART_FFT.ino](examples/V9360_UART_FFT/V9360_UART_FFT.ino) to select:
+
+- `V93XX_FFT_TARGET_V9360_UART`
+- `V93XX_FFT_TARGET_V9381_UART`
+- `V93XX_FFT_TARGET_V9381_SPI`
+
+Each target has its own capture word count and FFT length constants so sampling can be tuned per chip/mode.
+
 Ideally this function should be calibrated using a signal generator and passed through the V93xx.
 
 ## Performance
