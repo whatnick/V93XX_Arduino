@@ -48,13 +48,16 @@ The SPI protocol provides a synchronous full-duplex interface for communicating 
 - **V9381_UART_FFT** - V9381 FFT with reliability tuning (2s timeout, 4-word blocks)
 - **V9381_UART_DIRTY_MODE** - Demonstrates ChecksumMode switching
 - **V9381_SPI** - SPI communication for V9381
+- **V9381_SPI_WAVEFORM** - Fast waveform capture over SPI (~200ms)
+- **V9381_SPI_FFT** - Fast FFT over SPI with ESP-DSP integration
 
 ### Key Features
 - ✅ `CaptureWaveform()` API for unified waveform buffer capture
 - ✅ Overflow prevention via WAVESTORE_CNT clamping
 - ✅ Inter-frame delay for UART reliability
 - ✅ ESP-DSP integration for on-board FFT processing
-- ✅ All 8 examples compile for ESP32-S3
+- ✅ SPI support for fast data acquisition (~10x faster than UART)
+- ✅ All 10 examples compile for ESP32-S3
 
 ## Hardware Requirements
 

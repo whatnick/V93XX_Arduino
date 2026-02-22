@@ -219,7 +219,11 @@ python docs/../tools/test_checksum_mode.py
 |------|---------|
 | `examples/V9381_UART_DIRTY_MODE/` | Dirty mode demonstration |
 | `examples/V9381_UART/` | Basic UART communication |
-| `examples/V9381_SPI/` | SPI communication (if using SPI) |
+| `examples/V9381_UART_WAVEFORM/` | UART waveform capture |
+| `examples/V9381_UART_FFT/` | UART FFT with ESP-DSP |
+| `examples/V9381_SPI/` | SPI communication |
+| `examples/V9381_SPI_WAVEFORM/` | Fast SPI waveform capture |
+| `examples/V9381_SPI_FFT/` | Fast SPI FFT with ESP-DSP |
 
 ---
 

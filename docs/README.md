@@ -67,8 +67,10 @@ examples/
 ├── V9381_UART_WAVEFORM/                V9381 waveform capture
 ├── V9381_UART_FFT/                     V9381 FFT with reliability tuning
 ├── V9381_UART_DIRTY_MODE/              ChecksumMode demonstration
-└── V9381_SPI/                          V9381 SPI communication
-    └── DATASHEET_SPI.md                (code-specific SPI docs)
+├── V9381_SPI/                          V9381 SPI communication
+│   └── DATASHEET_SPI.md                (code-specific SPI docs)
+├── V9381_SPI_WAVEFORM/                 Fast SPI waveform capture (~200ms)
+└── V9381_SPI_FFT/                      Fast SPI FFT with ESP-DSP
 ```
 
 ---
@@ -145,7 +147,7 @@ For more details, see [GETTING_STARTED.md](GETTING_STARTED.md).
 | Overflow Prevention | ✅ | ✅ | Complete |
 | Automated Testing | ✅ | ⚠️ | UART only |
 | Logic Analyzer Capture | ✅ | ✅ | Complete |
-| Hardware Examples | ✅ (8 examples) | ✅ | Complete |
+| Hardware Examples | ✅ (10 examples) | ✅ | Complete |
 
 ---
 

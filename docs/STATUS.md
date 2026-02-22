@@ -49,7 +49,9 @@ Complete status of V9381 UART ChecksumMode implementation.
 - ✅ V9381_UART_FFT - V9381 FFT with Dirty mode and reliability tuning
 - ✅ V9381_UART_DIRTY_MODE - Demonstrating ChecksumMode switching
 - ✅ V9381_SPI - SPI communication example
-- ✅ All 8 examples compile successfully for ESP32-S3
+- ✅ V9381_SPI_WAVEFORM - Fast SPI waveform capture (~200ms)
+- ✅ V9381_SPI_FFT - Fast SPI FFT with ESP-DSP
+- ✅ All 10 examples compile successfully for ESP32-S3
 - ✅ Hardware validated (V9381 UART FFT tested on COM7)
 
 ---
