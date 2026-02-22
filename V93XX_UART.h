@@ -69,6 +69,9 @@ class V93XX_UART {
     void ConfigureBlockRead(const uint8_t addresses[], uint8_t num_addresses);
     void RegisterBlockRead(uint32_t (&values)[], uint8_t num_values);
 
+    bool CaptureWaveform(uint32_t *buffer, size_t word_count, uint32_t ctrl5, uint32_t timeout_ms = 1000,
+                         uint8_t block_words = 16);
+
     void LoadConfiguration(const ControlRegisters &ctrl, const CalibrationRegisters &calibrations);
 
     void SetChecksumMode(ChecksumMode mode);

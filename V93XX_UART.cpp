@@ -297,6 +297,70 @@ void V93XX_UART::RegisterBlockRead(uint32_t (&values)[], uint8_t num_values) {
     }
 }
 
+bool V93XX_UART::CaptureWaveform(uint32_t *buffer, size_t word_count, uint32_t ctrl5, uint32_t timeout_ms,
+                                 uint8_t block_words) {
+    if (!buffer || word_count == 0) {
+        return false;
+    }
+
+    RegisterWrite(SYS_INTSTS, SYS_INTSTS_WAVEOV | SYS_INTSTS_WAVESTORE | SYS_INTSTS_WAVEUPD);
+
+    uint32_t ctrl5_value = ctrl5 | DSP_CTRL5_WAVE_ADDR_CLR | DSP_CTRL5_TRIG_MANUAL;
+    RegisterWrite(DSP_CTRL5, ctrl5_value);
+
+    uint32_t start = millis();
+    bool overflow = false;
+    bool complete = false;
+    while ((millis() - start) < timeout_ms) {
+        uint32_t sys_intsts = RegisterRead(SYS_INTSTS);
+        if (sys_intsts & SYS_INTSTS_WAVEOV) {
+            overflow = true;
+            complete = true;
+            break;
+        }
+        if (sys_intsts & SYS_INTSTS_WAVESTORE) {
+            complete = true;
+            break;
+        }
+        delay(1);
+    }
+
+    if (!complete) {
+        return false;
+    }
+
+    uint16_t wavestore_cnt = (RegisterRead(SYS_MISC) & SYS_MISC_WAVESTORE_CNT_Msk) >> SYS_MISC_WAVESTORE_CNT_Pos;
+    if (wavestore_cnt > 0 && wavestore_cnt < word_count) {
+        word_count = wavestore_cnt;
+    }
+
+    uint8_t block_read_addrs[16];
+    for (size_t i = 0; i < 16; i++) {
+        block_read_addrs[i] = DAT_WAVE;
+    }
+    ConfigureBlockRead(block_read_addrs, 16);
+
+    uint8_t per_read = block_words;
+    if (per_read == 0 || per_read > 16) {
+        per_read = 16;
+    }
+
+    size_t index = 0;
+    size_t remaining = word_count;
+    while (remaining > 0) {
+        uint8_t read_size = (remaining < per_read) ? (uint8_t)remaining : per_read;
+        uint32_t data[16] = {0};
+        RegisterBlockRead(data, read_size);
+        for (uint8_t i = 0; i < read_size; i++) {
+            buffer[index++] = data[i];
+        }
+        remaining -= read_size;
+        delay(V93XX_INTERFRAME_DELAY_MS);
+    }
+
+    return !overflow;
+}
+
 void V93XX_UART::LoadConfiguration(const V93XX_UART::ControlRegisters &ctrl,
                                    const V93XX_UART::CalibrationRegisters &calibrations) {
     uint32_t checksum = 0;

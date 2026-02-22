@@ -41,10 +41,18 @@ Complete status of V9381 UART ChecksumMode implementation.
 - ✅ This status document
 
 ### Examples
-- ✅ V9381_UART_DIRTY_MODE.ino (demonstrating both modes)
-- ✅ Code comments with clear explanations
-- ✅ Serial output examples
-- ✅ Error cases documented
+- ✅ V9360_UART - Basic UART communication for V9360
+- ✅ V9360_UART_WAVEFORM - Waveform capture with CaptureWaveform() API
+- ✅ V9360_UART_FFT - On-board FFT using ESP-DSP
+- ✅ V9381_UART - Basic UART communication for V9381
+- ✅ V9381_UART_WAVEFORM - V9381 waveform capture
+- ✅ V9381_UART_FFT - V9381 FFT with Dirty mode and reliability tuning
+- ✅ V9381_UART_DIRTY_MODE - Demonstrating ChecksumMode switching
+- ✅ V9381_SPI - SPI communication example
+- ✅ V9381_SPI_WAVEFORM - Fast SPI waveform capture (~200ms)
+- ✅ V9381_SPI_FFT - Fast SPI FFT with ESP-DSP
+- ✅ All 10 examples compile successfully for ESP32-S3
+- ✅ Hardware validated (V9381 UART FFT tested on COM7)
 
 ---
 
@@ -98,6 +106,7 @@ Complete status of V9381 UART ChecksumMode implementation.
 | **Enum (ChecksumMode)** | ✅ Complete | Dirty & Clean modes |
 | **Init()** | ✅ Complete | Supports mode parameter |
 | **SetChecksumMode()** | ✅ Complete | Runtime switching |
+| **CaptureWaveform()** | ✅ Complete | UART & SPI, with overflow prevention |
 | **RegisterRead()** | ✅ Complete | Mode-aware CRC |
 | **RegisterWrite()** | ✅ Complete | Mode-aware CRC |
 | **RegisterBlockRead()** | ✅ Complete | Mode-aware CRC |

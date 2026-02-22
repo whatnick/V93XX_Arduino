@@ -25,6 +25,8 @@ For overview, getting started, and integration guidance, refer to the consolidat
 **For Copilot integration:** See [docs/COPILOT.md](../docs/COPILOT.md)  
 **For this detailed workflow:** Continue reading this file
 
+Naming convention note: use CamelCase for public APIs (for example `CaptureWaveform`).
+
 ---
 
 ## Prerequisites & Environment Setup
@@ -60,6 +62,33 @@ python -c "import saleae; print('Saleae SDK:', saleae.__version__)"
 # If missing:
 pip install saleae
 ```
+
+**Pre-Commit Setup for Code Quality**
+```bash
+# Install pre-commit in the uv venv
+uv pip install pre-commit
+
+# Install pre-commit hooks (one-time setup)
+. .\.venv\Scripts\Activate.ps1
+pre-commit install
+
+# IMPORTANT: Run this before every commit and push
+pre-commit run --all-files
+
+# This will automatically:
+# - Format all C/C++/Arduino files with clang-format
+# - Enforce consistent code style
+# - Catch formatting issues before they reach CI/CD
+
+# The pre-commit hook will run automatically on `git commit`
+# but you should run it manually before pushing to ensure all files are formatted
+```
+
+**NOTE FOR AI AGENTS:** Before making any commit or push, ALWAYS run:
+```powershell
+. .\.venv\Scripts\Activate.ps1; pre-commit run --all-files
+```
+This ensures code formatting is consistent across the entire codebase.
 
 ### 2. Hardware Connections (CRITICAL)
 

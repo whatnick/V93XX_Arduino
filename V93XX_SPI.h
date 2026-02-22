@@ -163,6 +163,9 @@ class V93XX_SPI {
      */
     void RegisterBlockRead(uint32_t (&values)[], uint8_t num_values);
 
+    bool CaptureWaveform(uint32_t *buffer, size_t word_count, uint32_t ctrl5, uint32_t timeout_ms = 1000,
+                         uint8_t block_words = 16);
+
     /**
      * @brief Load complete configuration (control and calibration registers)
      * @param ctrl Control register values
