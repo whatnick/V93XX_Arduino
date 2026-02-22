@@ -15,20 +15,7 @@ Using a small python script, and the captured data we can reconstruct the wavefo
 
 ![Wavegen](img/V93XX_buffer.png)
 
-```python
-wave_data = [ ... ]
-
-# plot wave_data
-import matplotlib.pyplot as plt
-plt.plot(wave_data)
-plt.show()
-
-# Futher analysis of results can be performed
-import numpy as np
-fft_data = np.fft.fft(wave_data)
-plt.plot(fft_data)
-plt.show()
-```
+See the Python helper script in tools/plot_v9360_waveform.py for plotting and FFT analysis of captured data.
 
 ## Performance
 
