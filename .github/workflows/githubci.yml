@@ -45,5 +45,5 @@ jobs:
         for sketch in $(find examples -name "*.ino"); do
           out_dir="build/ci_compile/$(basename "$sketch" .ino)"
           echo "Compiling $sketch"
-          arduino-cli compile --fqbn esp32:esp32:esp32s3 "$sketch" --output-dir "$out_dir"
+          arduino-cli compile --fqbn esp32:esp32:esp32s3 "$sketch" --output-dir "$out_dir" --libraries "$GITHUB_WORKSPACE"
         done
