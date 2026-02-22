@@ -51,16 +51,16 @@ Wiring diagrams below use the ESP32-S3 DevKitC defaults from the examples. You c
 ```mermaid
 flowchart LR
 	subgraph ESP32[ESP32-S3 DevKitC]
-		TX16[GPIO16 (TX)]
-		RX15[GPIO15 (RX)]
-		V3[3V3]
-		GND1[GND]
+		TX16["GPIO16 (TX)"]
+		RX15["GPIO15 (RX)"]
+		V3["3V3"]
+		GND1["GND"]
 	end
-	subgraph V9360[V9360 (UART)]
-		RX[UART RX]
-		TX[UART TX]
-		VDD[VDD (3.3V)]
-		GND2[GND]
+	subgraph V9360["V9360 (UART)"]
+		RX["UART RX"]
+		TX["UART TX"]
+		VDD["VDD (3.3V)"]
+		GND2["GND"]
 	end
 	TX16 --> RX
 	RX15 --> TX
@@ -76,20 +76,20 @@ flowchart LR
 ```mermaid
 flowchart LR
 	subgraph ESP32[ESP32-S3 DevKitC]
-		TX11[GPIO11 (MOSI/TX)]
-		RX13[GPIO13 (MISO/RX)]
-		A0[GPIO12 (SCK/A0)]
-		A1[GPIO10 (CS/A1)]
-		V3[3V3]
-		GND1[GND]
+		TX11["GPIO11 (MOSI/TX)"]
+		RX13["GPIO13 (MISO/RX)"]
+		A0["GPIO12 (SCK/A0)"]
+		A1["GPIO10 (CS/A1)"]
+		V3["3V3"]
+		GND1["GND"]
 	end
-	subgraph V9381[V9381 (UART)]
-		RX[UART RX / MOSI]
-		TX[UART TX / MISO]
-		A0P[A0 / SCK]
-		A1P[A1 / CS]
-		VDD[VDD (3.3V)]
-		GND2[GND]
+	subgraph V9381["V9381 (UART)"]
+		RX["UART RX / MOSI"]
+		TX["UART TX / MISO"]
+		A0P["A0 / SCK"]
+		A1P["A1 / CS"]
+		VDD["VDD (3.3V)"]
+		GND2["GND"]
 	end
 	TX11 --> RX
 	RX13 --> TX
@@ -108,20 +108,20 @@ flowchart LR
 ```mermaid
 flowchart LR
 	subgraph ESP32[ESP32-S3 DevKitC]
-		MOSI[GPIO11 (MOSI)]
-		MISO[GPIO13 (MISO)]
-		SCK[GPIO12 (SCK)]
-		CS[GPIO10 (CS)]
-		V3[3V3]
-		GND1[GND]
+		MOSI["GPIO11 (MOSI)"]
+		MISO["GPIO13 (MISO)"]
+		SCK["GPIO12 (SCK)"]
+		CS["GPIO10 (CS)"]
+		V3["3V3"]
+		GND1["GND"]
 	end
-	subgraph V9381[V9381 (SPI)]
-		MOSI2[MOSI]
-		MISO2[MISO]
-		SCK2[SCK]
-		CS2[CS]
-		VDD[VDD (3.3V)]
-		GND2[GND]
+	subgraph V9381["V9381 (SPI)"]
+		MOSI2["MOSI"]
+		MISO2["MISO"]
+		SCK2["SCK"]
+		CS2["CS"]
+		VDD["VDD (3.3V)"]
+		GND2["GND"]
 	end
 	MOSI --> MOSI2
 	MISO --> MISO2
