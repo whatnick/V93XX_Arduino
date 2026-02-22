@@ -53,7 +53,7 @@ void TestWithCleanMode() {
     Serial.println("\nReading SYS_VERSION register 3 times:");
     for (int i = 0; i < 3; i++) {
         uint32_t version = v9381.RegisterRead(SYS_VERSION);
-        Serial.printf("  Attempt %d: 0x%08X\n", i + 1, version);
+        Serial.printf("  Attempt %d: 0x%08lX\n", i + 1, static_cast<unsigned long>(version));
 
         // Per V9381 datasheet: minimum 2ms inter-frame delay (t_TRD)
         // Delay auto-calculated from baud rate for optimal speed & safety
@@ -68,7 +68,7 @@ void TestWithDirtyMode() {
     Serial.println("\nReading SYS_VERSION register 3 times:");
     for (int i = 0; i < 3; i++) {
         uint32_t version = v9381.RegisterRead(SYS_VERSION);
-        Serial.printf("  Attempt %d: 0x%08X\n", i + 1, version);
+        Serial.printf("  Attempt %d: 0x%08lX\n", i + 1, static_cast<unsigned long>(version));
 
         // Per V9381 datasheet: minimum 2ms inter-frame delay (t_TRD)
         // Delay auto-calculated from baud rate for optimal speed & safety
@@ -76,9 +76,9 @@ void TestWithDirtyMode() {
     }
 
     Serial.println("\nReading multiple registers:");
-    Serial.printf("  SYS_INTSTS = 0x%08X\n", v9381.RegisterRead(SYS_INTSTS));
+    Serial.printf("  SYS_INTSTS = 0x%08lX\n", static_cast<unsigned long>(v9381.RegisterRead(SYS_INTSTS)));
     delay(V93XX_INTERFRAME_DELAY_MS); // t_TRD inter-frame delay
-    Serial.printf("  SYS_ROMCS = 0x%08X\n", v9381.RegisterRead(SYS_ROMCS));
+    Serial.printf("  SYS_ROMCS = 0x%08lX\n", static_cast<unsigned long>(v9381.RegisterRead(SYS_ROMCS)));
     delay(V93XX_INTERFRAME_DELAY_MS); // t_TRD inter-frame delay
 
     // Return to Clean mode for normal operation

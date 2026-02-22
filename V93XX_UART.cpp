@@ -115,8 +115,6 @@ uint8_t V93XX_UART::RxBufferPop() {
 }
 
 void V93XX_UART::RegisterWrite(uint8_t address, uint32_t data) {
-    uint8_t i;
-
     const int num_registers = 1;
     // Described in Section 7.4 of Datasheet
     uint8_t payload[8] = {// Header
@@ -170,8 +168,6 @@ void V93XX_UART::RegisterWrite(uint8_t address, uint32_t data) {
 }
 
 uint32_t V93XX_UART::RegisterRead(uint8_t address) {
-    uint8_t i;
-
     const int num_registers = 1;
     // Described in Section 7.3 of Datasheet
     uint8_t request[4] = {// Header
@@ -274,7 +270,7 @@ void V93XX_UART::RegisterBlockRead(uint32_t (&values)[], uint8_t num_values) {
     // Per datasheet: CKSUM = 0x33 + ~(CMD1 + CMD2 + sum of all data bytes)
     uint8_t checksum = request[1] + request[2]; // Start with CMD1 + CMD2
     for (int i = 0; i < num_values; i++) {
-        uint8_t marker = this->RxBufferPop(); // Skip marker byte
+        (void)this->RxBufferPop(); // Skip marker byte
         uint8_t response[4];
         for (int j = 0; j < 4; j++) {
             response[j] = this->RxBufferPop();

@@ -24,7 +24,7 @@ class V93XX_SPI {
     };
 
     // Reuse register structures from UART version for compatibility
-    __attribute__((packed)) struct ControlRegisters {
+    struct __attribute__((packed)) ControlRegisters {
         union {
             uint32_t _array[8];
             struct {
@@ -40,7 +40,7 @@ class V93XX_SPI {
         };
     };
 
-    __attribute__((packed)) struct CalibrationRegisters {
+    struct __attribute__((packed)) CalibrationRegisters {
         union {
             uint32_t _array[22];
             struct {

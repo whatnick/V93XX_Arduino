@@ -13,7 +13,7 @@ class V93XX_UART {
         Clean = 1,
     };
 
-    __attribute__((packed)) struct ControlRegisters {
+    struct __attribute__((packed)) ControlRegisters {
         union {
             uint32_t _array[8];
             struct {
@@ -29,7 +29,7 @@ class V93XX_UART {
         };
     };
 
-    __attribute__((packed)) struct CalibrationRegisters {
+    struct __attribute__((packed)) CalibrationRegisters {
         union {
             uint32_t _array[22];
             struct {
