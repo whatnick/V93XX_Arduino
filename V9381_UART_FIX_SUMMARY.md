@@ -1,34 +1,43 @@
 # V9381 UART Debug & Fix Summary
 
 **Date:** February 22, 2026  
-**Status:** Critical bugs identified and fixed  
+**Status:** All critical bugs identified and fixed  
 **Branch:** feat/v9381_uart
 
 ---
 
 ## 🔴 Problems Identified & Fixed
 
-### Problem 1: Response Checksum Calculation Bug ✓ FIXED
-**Root Cause:** The RegisterRead() and RegisterBlockRead() functions were calculating response checksums incorrectly by including REQUEST command bytes instead of calculating only from RESPONSE data.
+### Problem 1: Response Checksum Calculation Bug (STILL PRESENT - CRITICAL) ⚠️ RE-FIXED
+**Root Cause:** The response checksum formula per V9381 datasheet is:
+```
+CKSUM = 0x33 + ~(CMD1 + CMD2 + sum of response data bytes)
+```
 
-**Impact:** ALL valid V9381 responses were rejected as "checksum invalid"
+But the driver was calculating:
+```
+CKSUM = 0x33 + ~(sum of response data bytes ONLY)
+```
 
-**Original Code (WRONG):**
+**Impact:** ALL valid V9381 responses were incorrectly rejected as "checksum invalid"
+
+**Previous Incorrect Fix (WRONG):**
 ```cpp
-uint8_t checksum = request[1] + request[2];  // Including request bytes!
+uint8_t checksum = 0;  // Start fresh - only response data
 // ... add response data to checksum
 checksum = 0x33 + ~(checksum);
 ```
 
-**Fixed Code:**
+**Correct Fix (NOW APPLIED):**
 ```cpp
-uint8_t checksum = 0;  // Start fresh - only response data
-// ... add response data bytes
-checksum = 0x33 + ~(checksum);  // Only response bytes included
+uint8_t checksum = request[1] + request[2];  // Include CMD1 + CMD2!
+// ... add response data to checksum
+checksum = 0x33 + ~(checksum);  // Now matches datasheet formula
 ```
 
 **Commits:**
-- `9f7419f` - Fix UART response checksum validation
+- `9f7419f` - Fix UART response checksum validation (PARTIAL)
+- `923d59a` - CRITICAL FIX: Response checksum must include CMD1 + CMD2 per datasheet (COMPLETE)
 
 ---
 
