@@ -28,7 +28,7 @@ The UART protocol is half-duplex with alternating send and receive cycles. Suppo
 - **V9360**: UART is the primary interface
 - **V9381**: UART supported with configurable device addressing (A0/A1 pins)
 
-**Library:** `V93XX_Raccoon`
+**Library:** `V93XX_UART`
 
 ### SPI
 The SPI protocol provides a synchronous full-duplex interface for communicating with the [V9381](https://www.vangotech.com/en/uploadpic/175272285131.pdf) energy monitoring ASIC. Supports standard SPI modes with configurable clock speeds up to 10 MHz, with FourWire and ThreeWire modes available.

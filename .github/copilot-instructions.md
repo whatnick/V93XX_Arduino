@@ -113,7 +113,7 @@ python tools/test_checksum_mode.py
 # ✅ All tests passed!
 
 # ACTION IF FAILED: 
-# - Stop and report: "Unit tests failed. Check CRC algorithm in V93XX_Raccoon.cpp"
+# - Stop and report: "Unit tests failed. Check CRC algorithm in V93XX_UART.cpp"
 # - Do NOT proceed to hardware testing
 ```
 

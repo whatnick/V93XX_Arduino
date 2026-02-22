@@ -101,7 +101,7 @@ OVERALL: PASSED
 ERROR: CRC Calculation test 1 failed
 Expected: 0x2C, Got: 0xAA
 
-ABORT: Check CRC algorithm in V93XX_Raccoon.cpp
+ABORT: Check CRC algorithm in V93XX_UART.cpp
 ```
 
 ### What Each Phase Shows

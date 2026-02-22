@@ -63,3 +63,6 @@ __pycache__/
 
 # Saleae captures
 tools/captures/
+
+# Local build files
+build/

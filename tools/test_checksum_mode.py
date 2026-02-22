@@ -286,7 +286,7 @@ def main():
     if all_passed:
         print("\n✅ All tests passed!")
         print("\nYou can now test on hardware with:")
-        print("  1. Initialize with dirty mode: v9381.Init(config, V93XX_Raccoon::ChecksumMode::Dirty);")
+        print("  1. Initialize with dirty mode: v9381.Init(config, V93XX_UART::ChecksumMode::Dirty);")
         print("  2. Perform register operations")
         print("  3. Check Serial output for CRC comparisons")
         print("  4. Verify expected vs received CRC values")

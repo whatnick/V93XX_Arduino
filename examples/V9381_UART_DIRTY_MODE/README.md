@@ -21,23 +21,23 @@ This mode aligns with the SPI implementation and helps verify if CRC calculation
 ### Enable Dirty Mode (Skip CRC Validation)
 
 ```cpp
-v9381.SetChecksumMode(V93XX_Raccoon::ChecksumMode::Dirty);
+v9381.SetChecksumMode(V93XX_UART::ChecksumMode::Dirty);
 ```
 
 ### Enable Clean Mode (Enforce CRC Validation)
 
 ```cpp
-v9381.SetChecksumMode(V93XX_Raccoon::ChecksumMode::Clean);
+v9381.SetChecksumMode(V93XX_UART::ChecksumMode::Clean);
 ```
 
 ### Set Mode During Initialization
 
 ```cpp
 // Initialize with Dirty mode (for debugging)
-v9381.Init(SerialConfig::SERIAL_8O1, V93XX_Raccoon::ChecksumMode::Dirty);
+v9381.Init(SerialConfig::SERIAL_8O1, V93XX_UART::ChecksumMode::Dirty);
 
 // Initialize with Clean mode (default)
-v9381.Init(SerialConfig::SERIAL_8O1, V93XX_Raccoon::ChecksumMode::Clean);
+v9381.Init(SerialConfig::SERIAL_8O1, V93XX_UART::ChecksumMode::Clean);
 
 // Initialize with default (Clean mode)
 v9381.Init(SerialConfig::SERIAL_8O1);

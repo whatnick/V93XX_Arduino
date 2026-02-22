@@ -194,9 +194,9 @@ class SetupVerifier:
         
         # Check driver files
         driver_files = [
-            "V93XX_Raccoon.h",
-            "V93XX_Raccoon.cpp",
-            "V93XX_Raccoon_registers.h"
+            "V93XX_UART.h",
+            "V93XX_UART.cpp",
+            "V93XX_UART_registers.h"
         ]
         
         for f in driver_files:
@@ -227,7 +227,7 @@ class SetupVerifier:
         self.print_header("Hardware Configuration")
         
         # Check UART pins in code
-        raccoon_h = Path("V93XX_Raccoon.h")
+        uart_h = Path("V93XX_UART.h")
         if raccoon_h.exists():
             content = raccoon_h.read_text()
             has_rx_pin = "RX_PIN" in content or "11" in content  # Common ESP32-S3 RX
@@ -236,7 +236,7 @@ class SetupVerifier:
             self.check(
                 "UART RX/TX pins configured",
                 has_rx_pin and has_tx_pin,
-                "Check pins 11 (RX) and 12 (TX) in V93XX_Raccoon.h"
+                "Check pins 11 (RX) and 12 (TX) in V93XX_UART.h"
             )
         
         # Check SPI pins (from SPI_Transactions.csv or examples)

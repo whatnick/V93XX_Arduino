@@ -5,7 +5,7 @@ Design patterns and implementation alignment between UART and SPI drivers.
 ## 🏗️ Design Principles
 
 ### 1. ChecksumMode Alignment
-Both V93XX_Raccoon (UART) and V93XX_SPI use **identical ChecksumMode pattern**:
+Both V93XX_UART (UART) and V93XX_SPI use **identical ChecksumMode pattern**:
 
 ```cpp
 // Exactly the same in both drivers
@@ -128,14 +128,14 @@ Both drivers handle:
 └─────────────┬───────────────────┘
               │
 ┌─────────────▼───────────────────┐
-│ V93XX_Raccoon (PUBLIC API)      │
+│ V93XX_UART (PUBLIC API)      │
 │ • Init(mode)                    │
 │ • SetChecksumMode()            │
 │ • ChecksumMode enum             │
 └─────────────┬───────────────────┘
               │
 ┌─────────────▼───────────────────┐
-│ V93XX_Raccoon PRIVATE           │
+│ V93XX_UART PRIVATE           │
 │ • calculate_crc8()             │
 │ • encode_command()             │
 │ • parse_response()             │
@@ -225,8 +225,8 @@ Both drivers handle:
 
 | File | Purpose |
 |------|---------|
-| `V93XX_Raccoon.h` | Public API & ChecksumMode enum |
-| `V93XX_Raccoon.cpp` | Implementation & CRC logic |
+| `V93XX_UART.h` | Public API & ChecksumMode enum |
+| `V93XX_UART.cpp` | Implementation & CRC logic |
 | `V93XX_SPI.h` | SPI driver (for comparison) |
 | `V93XX_SPI.cpp` | SPI implementation |
 | `examples/V9381_UART_DIRTY_MODE/` | Complete example |

@@ -6,9 +6,9 @@ Using V93XX ChecksumMode in your Arduino project.
 
 ### 1. Include Library
 ```cpp
-#include "V93XX_Raccoon.h"
+#include "V93XX_UART.h"
 
-V93XX_Raccoon v9381;
+V93XX_UART v9381;
 ```
 
 ### 2. Initialize
@@ -20,7 +20,7 @@ void setup() {
   v9381.Init();
   
   // Or be explicit:
-  // v9381.Init(SerialConfig::SERIAL_8O1, V93XX_Raccoon::ChecksumMode::Dirty);
+  // v9381.Init(SerialConfig::SERIAL_8O1, V93XX_UART::ChecksumMode::Dirty);
 }
 ```
 
@@ -48,7 +48,7 @@ void loop() {
 - Learning the protocol
 
 ```cpp
-v9381.Init(SerialConfig::SERIAL_8O1, V93XX_Raccoon::ChecksumMode::Dirty);
+v9381.Init(SerialConfig::SERIAL_8O1, V93XX_UART::ChecksumMode::Dirty);
 ```
 
 ### Choose Clean Mode When
@@ -58,7 +58,7 @@ v9381.Init(SerialConfig::SERIAL_8O1, V93XX_Raccoon::ChecksumMode::Dirty);
 - Full integration testing
 
 ```cpp
-v9381.SetChecksumMode(V93XX_Raccoon::ChecksumMode::Clean);
+v9381.SetChecksumMode(V93XX_UART::ChecksumMode::Clean);
 ```
 
 ---
@@ -77,7 +77,7 @@ void setup() {
   delay(1000);
   
   // Switch to Clean for production
-  v9381.SetChecksumMode(V93XX_Raccoon::ChecksumMode::Clean);
+  v9381.SetChecksumMode(V93XX_UART::ChecksumMode::Clean);
   Serial.println("Ready for production");
 }
 ```
@@ -98,14 +98,14 @@ if (value == 0 && /* some error condition */) {
 ### Pattern 3: Mode Verification
 ```cpp
 void loop() {
-  v9381.SetChecksumMode(V93XX_Raccoon::ChecksumMode::Dirty);
+  v9381.SetChecksumMode(V93XX_UART::ChecksumMode::Dirty);
   
   uint32_t dirty_value = v9381.RegisterRead(0x00);
   // Serial: "CRC Valid/Mismatch" message
   
   delay(100);
   
-  v9381.SetChecksumMode(V93XX_Raccoon::ChecksumMode::Clean);
+  v9381.SetChecksumMode(V93XX_UART::ChecksumMode::Clean);
   
   uint32_t clean_value = v9381.RegisterRead(0x00);
   // Serial: "ERROR" or success, value returned

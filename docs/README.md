@@ -87,9 +87,9 @@ examples/
 - Automated testing: `tools/run_automated_tests.ps1`
 
 ### For Code
-- UART driver: `V93XX_Raccoon.h` / `V93XX_Raccoon.cpp`
+- UART driver: `V93XX_UART.h` / `V93XX_UART.cpp`
 - SPI driver: `V93XX_SPI.h` / `V93XX_SPI.cpp`
-- Register definitions: `V93XX_Raccoon_registers.h`
+- Register definitions: `V93XX_UART_registers.h`
 
 ---
 
@@ -103,9 +103,9 @@ cp -r V93XX_Arduino ~/Arduino/libraries/
 
 ### 2. Use
 ```cpp
-#include "V93XX_Raccoon.h"
+#include "V93XX_UART.h"
 
-V93XX_Raccoon v9381;
+V93XX_UART v9381;
 
 void setup() {
   Serial.begin(115200);

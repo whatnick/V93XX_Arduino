@@ -22,20 +22,20 @@ Both modes are aligned with the V93XX_SPI implementation for consistency.
 v9381.Init();
 
 // Explicit Dirty mode
-v9381.Init(SerialConfig::SERIAL_8O1, V93XX_Raccoon::ChecksumMode::Dirty);
+v9381.Init(SerialConfig::SERIAL_8O1, V93XX_UART::ChecksumMode::Dirty);
 
 // Explicit Clean mode
-v9381.Init(SerialConfig::SERIAL_8O1, V93XX_Raccoon::ChecksumMode::Clean);
+v9381.Init(SerialConfig::SERIAL_8O1, V93XX_UART::ChecksumMode::Clean);
 ```
 
 ### Runtime Mode Switching
 
 ```cpp
 // Switch to Clean mode
-v9381.SetChecksumMode(V93XX_Raccoon::ChecksumMode::Clean);
+v9381.SetChecksumMode(V93XX_UART::ChecksumMode::Clean);
 
 // Switch back to Dirty
-v9381.SetChecksumMode(V93XX_Raccoon::ChecksumMode::Dirty);
+v9381.SetChecksumMode(V93XX_UART::ChecksumMode::Dirty);
 ```
 
 ### Register Operations (Unchanged)
@@ -117,7 +117,7 @@ void setup() {
   delay(1000);
   
   // Switch to Clean mode
-  v9381.SetChecksumMode(V93XX_Raccoon::ChecksumMode::Clean);
+  v9381.SetChecksumMode(V93XX_UART::ChecksumMode::Clean);
   Serial.println("Switched to Clean mode - strict validation");
 }
 
@@ -285,7 +285,7 @@ ERROR: CRC mismatch! Expected 0x2B, Received 0xAA
 
 **Verify**:
 ```cpp
-v9381.SetChecksumMode(V93XX_Raccoon::ChecksumMode::Clean);
+v9381.SetChecksumMode(V93XX_UART::ChecksumMode::Clean);
 
 uint32_t value = v9381.RegisterRead(0x00);
 // If CRC invalid above:
@@ -317,8 +317,8 @@ uint32_t value = v9381.RegisterRead(0x00);
 
 | File | Purpose |
 |------|---------|
-| `V93XX_Raccoon.h` | ChecksumMode enum & API declarations |
-| `V93XX_Raccoon.cpp` | Mode-aware CRC implementation |
+| `V93XX_UART.h` | ChecksumMode enum & API declarations |
+| `V93XX_UART.cpp` | Mode-aware CRC implementation |
 | `examples/V9381_UART_DIRTY_MODE/` | Working example demonstrating both modes |
 | `tools/test_checksum_mode.py` | Unit tests validating algorithm |
 | `tools/analyze_checksum_captures.py` | Frame analyzer with CRC validation |

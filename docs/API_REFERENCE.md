@@ -1,6 +1,6 @@
 # API Reference
 
-Complete API documentation for V93XX_Raccoon (UART) driver with ChecksumMode.
+Complete API documentation for V93XX_UART (UART) driver with ChecksumMode.
 
 ## 📖 Quick Reference
 
@@ -28,7 +28,7 @@ v9381.RegisterBlockRead(address, count, buffer);
 
 ## 🔧 Complete API
 
-### Class: V93XX_Raccoon
+### Class: V93XX_UART
 
 #### Type: ChecksumMode
 ```cpp
@@ -71,10 +71,10 @@ void Init(SerialConfig config = SERIAL_8O1,
 v9381.Init();
 
 // Explicit Dirty mode
-v9381.Init(SerialConfig::SERIAL_8O1, V93XX_Raccoon::ChecksumMode::Dirty);
+v9381.Init(SerialConfig::SERIAL_8O1, V93XX_UART::ChecksumMode::Dirty);
 
 // Explicit Clean mode
-v9381.Init(SerialConfig::SERIAL_8O1, V93XX_Raccoon::ChecksumMode::Clean);
+v9381.Init(SerialConfig::SERIAL_8O1, V93XX_UART::ChecksumMode::Clean);
 ```
 
 ---
@@ -100,7 +100,7 @@ void SetChecksumMode(ChecksumMode mode);
 v9381.Init();
 
 // Later: Switch to Clean mode
-v9381.SetChecksumMode(V93XX_Raccoon::ChecksumMode::Clean);
+v9381.SetChecksumMode(V93XX_UART::ChecksumMode::Clean);
 ```
 
 ---

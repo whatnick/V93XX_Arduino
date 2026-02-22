@@ -1,4 +1,4 @@
-#include "V93XX_Raccoon.h"
+#include "V93XX_UART.h"
 
 // V9381 UART example using the same wires as SPI on ESP32-S3.
 // RX/MOSI and TX/MISO share the same pins, and A0/A1 share SCK/CS.
@@ -33,7 +33,7 @@ const int V93XX_DEVICE_ADDRESS = 0x00;
 static void RunUartProbe(int rx_pin, int tx_pin, const char *label) {
     Serial.printf("\n=== UART probe: %s (RX=%d, TX=%d) ===\n", label, rx_pin, tx_pin);
 
-    V93XX_Raccoon probe(rx_pin, tx_pin, Serial1, V93XX_DEVICE_ADDRESS);
+    V93XX_UART probe(rx_pin, tx_pin, Serial1, V93XX_DEVICE_ADDRESS);
 
     v9381.RxReset();
 
@@ -84,7 +84,7 @@ static void RunUartProbe(int rx_pin, int tx_pin, const char *label) {
 }
 #endif
 
-V93XX_Raccoon v9381(V93XX_UART_RX_PIN, V93XX_UART_TX_PIN, Serial1, V93XX_DEVICE_ADDRESS);
+V93XX_UART v9381(V93XX_UART_RX_PIN, V93XX_UART_TX_PIN, Serial1, V93XX_DEVICE_ADDRESS);
 
 static void ConfigureUartAddressPins(int address) {
     pinMode(V93XX_ADDR0_PIN, OUTPUT);
@@ -142,7 +142,7 @@ void setup() {
 #endif
 
     v9381.LoadConfiguration(
-        (const V93XX_Raccoon::ControlRegisters &){
+        (const V93XX_UART::ControlRegisters &){
             .DSP_ANA0 = 0x00100C00,
             .DSP_ANA1 = 0x000C32C1,
             .DSP_CTRL0 = 0x01000F07,
@@ -152,7 +152,7 @@ void setup() {
             .DSP_CTRL4 = 0x00000000,
             .DSP_CTRL5 = 0x00000000,
         },
-        (const V93XX_Raccoon::CalibrationRegisters &){
+        (const V93XX_UART::CalibrationRegisters &){
             .DSP_CFG_CALI_PA = 0x00000000,
             .DSP_CFG_DC_PA = 0x00000000,
             .DSP_CFG_CALI_QA = 0x00000000,

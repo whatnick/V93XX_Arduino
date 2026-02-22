@@ -120,8 +120,8 @@ Root Level Files (moved to docs/):
 Code-Specific Documentation (kept near code):
 ✅ examples/V9381_UART/DATASHEET_UART.md
 ✅ examples/V9381_SPI/DATASHEET_SPI.md
-✅ V93XX_Raccoon.h (inline comments)
-✅ V93XX_Raccoon.cpp (inline comments)
+✅ V93XX_UART.h (inline comments)
+✅ V93XX_UART.cpp (inline comments)
 ```
 
 ---

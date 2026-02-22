@@ -188,7 +188,7 @@ python tools/test_checksum_mode.py
 
 | Failure | Cause | Fix |
 |---------|-------|-----|
-| "CRC Calculation FAIL" | Algorithm not implemented | Check V93XX_Raccoon.cpp CRC logic |
+| "CRC Calculation FAIL" | Algorithm not implemented | Check V93XX_UART.cpp CRC logic |
 | "Clean Mode Behavior FAIL" | Validation logic broken | Check `checksum_mode == ChecksumMode::Clean` |
 | "Dirty Mode Behavior FAIL" | Skip logic broken | Check `ChecksumMode::Dirty` handling |
 
@@ -197,7 +197,7 @@ python tools/test_checksum_mode.py
 **Test code:**
 ```cpp
 void TestCleanMode() {
-  v9381.SetChecksumMode(V93XX_Raccoon::ChecksumMode::Clean);
+  v9381.SetChecksumMode(V93XX_UART::ChecksumMode::Clean);
   // Register read that would send valid CRC
   uint32_t value = v9381.RegisterRead(0x00);  // Should succeed
   
@@ -218,7 +218,7 @@ void TestCleanMode() {
 **Test code:**
 ```cpp
 void TestDirtyMode() {
-  v9381.SetChecksumMode(V93XX_Raccoon::ChecksumMode::Dirty);
+  v9381.SetChecksumMode(V93XX_UART::ChecksumMode::Dirty);
   // Any register operation
   uint32_t value = v9381.RegisterRead(0x00);
 }
@@ -317,7 +317,7 @@ python tools/test_checksum_mode.py
 ```
 
 **Solutions:**
-1. Check CRC formula in V93XX_Raccoon.cpp is exactly: `0x33 + ~(sum & 0xFF)) & 0xFF`
+1. Check CRC formula in V93XX_UART.cpp is exactly: `0x33 + ~(sum & 0xFF)) & 0xFF`
 2. Verify `calculate_crc8_v9381()` is called in all three register methods
 3. Compare captured CRC with expected on hardware
 
@@ -330,7 +330,7 @@ Operations succeed even when CRC invalid
 **Solutions:**
 1. Check `if (this->checksum_mode == ChecksumMode::Clean)` condition
 2. Verify error is printed and operation returns early
-3. Test with: `v9381.SetChecksumMode(V93XX_Raccoon::ChecksumMode::Clean);`
+3. Test with: `v9381.SetChecksumMode(V93XX_UART::ChecksumMode::Clean);`
 
 ### Problem: Capture file missing UART data
 **Diagnosis:**
@@ -396,8 +396,8 @@ The plotting tool can now add CRC status as overlay:
 
 ## Files Modified
 
-- `V93XX_Raccoon.h` - Added ChecksumMode enum
-- `V93XX_Raccoon.cpp` - Updated all register methods with mode awareness
+- `V93XX_UART.h` - Added ChecksumMode enum
+- `V93XX_UART.cpp` - Updated all register methods with mode awareness
 - `examples/V9381_UART_DIRTY_MODE/V9381_UART_DIRTY_MODE.ino` - Example code
 - `tools/test_checksum_mode.py` - Unit test suite (NEW)
 - `tools/analyze_checksum_captures.py` - Capture analyzer (NEW)

@@ -18,9 +18,9 @@ Open Arduino IDE → Sketch → Include Library → Should see "V93XX_Arduino"
 Create a new sketch:
 
 ```cpp
-#include "V93XX_Raccoon.h"
+#include "V93XX_UART.h"
 
-V93XX_Raccoon v9381;
+V93XX_UART v9381;
 
 void setup() {
   Serial.begin(115200);

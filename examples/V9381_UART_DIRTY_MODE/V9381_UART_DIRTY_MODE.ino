@@ -1,4 +1,4 @@
-#include "V93XX_Raccoon.h"
+#include "V93XX_UART.h"
 
 // V9381 UART Dirty Mode Example
 // This example demonstrates how to use dirty mode for CRC debugging
@@ -15,7 +15,7 @@ const int V93XX_UART_RX_PIN = 15; // Adjust for your board
 
 const int V93XX_DEVICE_ADDRESS = 0x00;
 
-V93XX_Raccoon v9381(V93XX_UART_RX_PIN, V93XX_UART_TX_PIN, Serial1, V93XX_DEVICE_ADDRESS);
+V93XX_UART v9381(V93XX_UART_RX_PIN, V93XX_UART_TX_PIN, Serial1, V93XX_DEVICE_ADDRESS);
 
 void setup() {
     Serial.begin(115200);
@@ -25,7 +25,7 @@ void setup() {
     
     // Initialize UART in Dirty mode (skip CRC validation)
     v9381.RxReset();
-    v9381.Init(SerialConfig::SERIAL_8O1, V93XX_Raccoon::ChecksumMode::Dirty);
+    v9381.Init(SerialConfig::SERIAL_8O1, V93XX_UART::ChecksumMode::Dirty);
     
     delay(500);
 }
@@ -45,7 +45,7 @@ void loop() {
 
 void TestWithCleanMode() {
     // Set to Clean mode - will enforce CRC validation
-    v9381.SetChecksumMode(V93XX_Raccoon::ChecksumMode::Clean);
+    v9381.SetChecksumMode(V93XX_UART::ChecksumMode::Clean);
     
     Serial.println("\nReading SYS_VERSION register 3 times:");
     for (int i = 0; i < 3; i++) {
@@ -56,7 +56,7 @@ void TestWithCleanMode() {
 
 void TestWithDirtyMode() {
     // Set to Dirty mode - will skip CRC validation
-    v9381.SetChecksumMode(V93XX_Raccoon::ChecksumMode::Dirty);
+    v9381.SetChecksumMode(V93XX_UART::ChecksumMode::Dirty);
     
     Serial.println("\nReading SYS_VERSION register 3 times:");
     for (int i = 0; i < 3; i++) {
@@ -66,10 +66,10 @@ void TestWithDirtyMode() {
     
     Serial.println("\nReading multiple registers:");
     Serial.printf("  SYS_INTSTS = 0x%08X\n", v9381.RegisterRead(SYS_INTSTS));
-    Serial.printf("  SYS_FRMWVER = 0x%08X\n", v9381.RegisterRead(SYS_FRMWVER));
+    Serial.printf("  SYS_ROMCS = 0x%08X\n", v9381.RegisterRead(SYS_ROMCS));
     
     // Return to Clean mode for normal operation
-    v9381.SetChecksumMode(V93XX_Raccoon::ChecksumMode::Clean);
+    v9381.SetChecksumMode(V93XX_UART::ChecksumMode::Clean);
     Serial.println("\nReturned to Clean mode - normal operation");
 }
 
