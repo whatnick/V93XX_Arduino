@@ -408,8 +408,7 @@ bool V93XX_SPI::CaptureWaveform(uint32_t *buffer, size_t word_count, uint32_t ct
         return false;
     }
 
-    uint16_t wavestore_cnt =
-        (RegisterRead(SYS_MISC) & SYS_MISC_WAVESTORE_CNT_Msk) >> SYS_MISC_WAVESTORE_CNT_Pos;
+    uint16_t wavestore_cnt = (RegisterRead(SYS_MISC) & SYS_MISC_WAVESTORE_CNT_Msk) >> SYS_MISC_WAVESTORE_CNT_Pos;
     if (wavestore_cnt > 0 && wavestore_cnt < word_count) {
         word_count = wavestore_cnt;
     }

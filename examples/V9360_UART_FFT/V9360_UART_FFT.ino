@@ -1,6 +1,6 @@
 #define V93XX_FFT_TARGET_V9360_UART 1
 #define V93XX_FFT_TARGET_V9381_UART 2
-#define V93XX_FFT_TARGET_V9381_SPI 3
+#define V93XX_FFT_TARGET_V9381_SPI  3
 
 #ifndef V93XX_FFT_TARGET
 #define V93XX_FFT_TARGET V93XX_FFT_TARGET_V9381_UART
@@ -129,37 +129,36 @@ void setup() {
     uint32_t register_value = device.RegisterRead(SYS_VERSION);
     Serial.printf("System Version: 0x%08X\n", register_value);
 
-    device.LoadConfiguration(
-        (const V93XXControlRegisters &){.DSP_ANA0 = 0x00100C00,
-                                        .DSP_ANA1 = 0x000C32C1,
-                                        .DSP_CTRL0 = 0x01000f07,
-                                        .DSP_CTRL1 = 0x000C32C1,
-                                        .DSP_CTRL2 = 0x00002723,
-                                        .DSP_CTRL3 = 0x00000000,
-                                        .DSP_CTRL4 = 0x00000000,
-                                        .DSP_CTRL5 = 0x00000000},
-        (const V93XXCalibrationRegisters &){.DSP_CFG_CALI_PA = 0x00000000,
-                                            .DSP_CFG_DC_PA = 0x00000000,
-                                            .DSP_CFG_CALI_QA = 0x00000000,
-                                            .DSP_CFG_DC_QA = 0x00000000,
-                                            .DSP_CFG_CALI_PB = 0x00000000,
-                                            .DSP_CFG_DC_PB = 0x00000000,
-                                            .DSP_CFG_CALI_QB = 0x00000000,
-                                            .DSP_CFG_DC_QB = 0x00000000,
-                                            .DSP_CFG_CALI_RMSUA = 0x00000000,
-                                            .DSP_CFG_RMS_DCUA = 0x00000000,
-                                            .DSP_CFG_CALI_RMSIA = 0x00000000,
-                                            .DSP_CFG_RMS_DCIA = 0x00000000,
-                                            .DSP_CFG_CALI_RMSIB = 0x00000000,
-                                            .DSP_CFG_RMS_DCIB = 0x00000000,
-                                            .DSP_CFG_PHC = 0x00000000,
-                                            .DSP_CFG_DCUA = 0x00000000,
-                                            .DSP_CFG_DCIA = 0x00000000,
-                                            .DSP_CFG_DCIB = 0x00000000,
-                                            .DSP_CFG_BPF = 0x806764B6,
-                                            .DSP_CFG_CKSUM = 0x00000000,
-                                            .EGY_PROCTH = 0x00000000,
-                                            .EGY_PWRTH = 0x00000000});
+    device.LoadConfiguration((const V93XXControlRegisters &){.DSP_ANA0 = 0x00100C00,
+                                                             .DSP_ANA1 = 0x000C32C1,
+                                                             .DSP_CTRL0 = 0x01000f07,
+                                                             .DSP_CTRL1 = 0x000C32C1,
+                                                             .DSP_CTRL2 = 0x00002723,
+                                                             .DSP_CTRL3 = 0x00000000,
+                                                             .DSP_CTRL4 = 0x00000000,
+                                                             .DSP_CTRL5 = 0x00000000},
+                             (const V93XXCalibrationRegisters &){.DSP_CFG_CALI_PA = 0x00000000,
+                                                                 .DSP_CFG_DC_PA = 0x00000000,
+                                                                 .DSP_CFG_CALI_QA = 0x00000000,
+                                                                 .DSP_CFG_DC_QA = 0x00000000,
+                                                                 .DSP_CFG_CALI_PB = 0x00000000,
+                                                                 .DSP_CFG_DC_PB = 0x00000000,
+                                                                 .DSP_CFG_CALI_QB = 0x00000000,
+                                                                 .DSP_CFG_DC_QB = 0x00000000,
+                                                                 .DSP_CFG_CALI_RMSUA = 0x00000000,
+                                                                 .DSP_CFG_RMS_DCUA = 0x00000000,
+                                                                 .DSP_CFG_CALI_RMSIA = 0x00000000,
+                                                                 .DSP_CFG_RMS_DCIA = 0x00000000,
+                                                                 .DSP_CFG_CALI_RMSIB = 0x00000000,
+                                                                 .DSP_CFG_RMS_DCIB = 0x00000000,
+                                                                 .DSP_CFG_PHC = 0x00000000,
+                                                                 .DSP_CFG_DCUA = 0x00000000,
+                                                                 .DSP_CFG_DCIA = 0x00000000,
+                                                                 .DSP_CFG_DCIB = 0x00000000,
+                                                                 .DSP_CFG_BPF = 0x806764B6,
+                                                                 .DSP_CFG_CKSUM = 0x00000000,
+                                                                 .EGY_PROCTH = 0x00000000,
+                                                                 .EGY_PWRTH = 0x00000000});
 
     device.RegisterWrite(SYS_IOCFG0, 0x00000000);
     device.RegisterWrite(SYS_IOCFG1, 0x003C3A00);
