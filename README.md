@@ -37,10 +37,24 @@ The SPI protocol provides a synchronous full-duplex interface for communicating 
 
 ## Examples
 
-- **V9360_UART** - Basic UART communication example for V9360
-- **V9360_UART_WAVEFORM** - Advanced UART example with waveform buffer capture and analysis
-- **V9381_UART** - UART communication example for V9381 (shared bus with SPI pin configuration)
-- **V9381_SPI** - SPI communication example for V9381
+### V9360 Examples
+- **V9360_UART** - Basic UART communication for V9360
+- **V9360_UART_WAVEFORM** - Waveform capture using `CaptureWaveform()` API
+- **V9360_UART_FFT** - On-board FFT analysis with ESP-DSP
+
+### V9381 Examples
+- **V9381_UART** - Basic UART communication for V9381
+- **V9381_UART_WAVEFORM** - V9381 waveform capture with Dirty mode
+- **V9381_UART_FFT** - V9381 FFT with reliability tuning (2s timeout, 4-word blocks)
+- **V9381_UART_DIRTY_MODE** - Demonstrates ChecksumMode switching
+- **V9381_SPI** - SPI communication for V9381
+
+### Key Features
+- ✅ `CaptureWaveform()` API for unified waveform buffer capture
+- ✅ Overflow prevention via WAVESTORE_CNT clamping
+- ✅ Inter-frame delay for UART reliability
+- ✅ ESP-DSP integration for on-board FFT processing
+- ✅ All 8 examples compile for ESP32-S3
 
 ## Hardware Requirements
 

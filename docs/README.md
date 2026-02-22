@@ -59,15 +59,16 @@ docs/
 └── STATUS.md                           Implementation status
 
 examples/
-├── V9381_UART_DIRTY_MODE/
-│   ├── V9381_UART_DIRTY_MODE.ino       (code-specific README in folder)
-│   └── README.md
-├── V9381_UART/
-│   ├── DATASHEET_UART.md               (code-specific UART docs)
-│   └── ...
-└── V9381_SPI/
-    ├── DATASHEET_SPI.md                (code-specific SPI docs)
-    └── ...
+├── V9360_UART/                         Basic V9360 UART communication
+├── V9360_UART_WAVEFORM/                V9360 waveform capture with CaptureWaveform()
+├── V9360_UART_FFT/                     Multi-target FFT (V9360/V9381, UART/SPI)
+├── V9381_UART/                         Basic V9381 UART communication
+│   └── DATASHEET_UART.md               (code-specific UART docs)
+├── V9381_UART_WAVEFORM/                V9381 waveform capture
+├── V9381_UART_FFT/                     V9381 FFT with reliability tuning
+├── V9381_UART_DIRTY_MODE/              ChecksumMode demonstration
+└── V9381_SPI/                          V9381 SPI communication
+    └── DATASHEET_SPI.md                (code-specific SPI docs)
 ```
 
 ---
@@ -131,17 +132,20 @@ For more details, see [GETTING_STARTED.md](GETTING_STARTED.md).
 
 ## 📊 Feature Overview
 
-| Feature | UART (V9381) | SPI (V9381) | Status |
+| Feature | UART (V93XX) | SPI (V9381) | Status |
 |---------|------------|-----------|--------|
 | Register Read | ✅ | ✅ | Complete |
 | Register Write | ✅ | ✅ | Complete |
 | Block Read | ✅ | ✅ | Complete |
+| **CaptureWaveform()** | ✅ | ✅ | Complete |
 | **ChecksumMode** | ✅ | ✅ | Complete |
 | Dirty Mode (skip CRC) | ✅ | ✅ | Complete |
 | Clean Mode (enforce CRC) | ✅ | ✅ | Complete |
+| FFT Integration (ESP-DSP) | ✅ | ✅ | Complete |
+| Overflow Prevention | ✅ | ✅ | Complete |
 | Automated Testing | ✅ | ⚠️ | UART only |
 | Logic Analyzer Capture | ✅ | ✅ | Complete |
-| Hardware Examples | ✅ | ✅ | Complete |
+| Hardware Examples | ✅ (8 examples) | ✅ | Complete |
 
 ---
 

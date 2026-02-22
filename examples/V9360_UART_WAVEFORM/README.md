@@ -1,26 +1,77 @@
-# Waveform Buffer Example
+# V9360 UART Waveform Example
 
-This example shows how to make us of the Waveform buffer feature of the V93XX. 
-1. Configuring Waveform buffer
-2. Initiating an manual capture
-3. Downloading the data
+Demonstrates waveform buffer capture using the V9360 ASIC over UART.
 
-With the code uploaded and running, a waveform capture is run repetitively, and the results are output over the serial console to enable further experimentation and analysis.
+## Features
 
-A test signal was applied to the UP/UN inputs of the V93XX.
+- ✅ Uses `CaptureWaveform()` API for simplified capture
+- ✅ Configures DSP for manual trigger mode
+- ✅ Captures 512-sample waveform buffer
+- ✅ Prints samples as 16-bit pairs for offline analysis
+- ✅ Automatic overflow prevention
+
+## Workflow
+
+1. **Configure DSP_CTRL5**: Set channel, trigger mode, sample length
+2. **Initiate Manual Capture**: Call `CaptureWaveform()`
+3. **Download Data**: API reads from DAT_WAVE register
+4. **Print Results**: Output as hex pairs for Python plotting
+
+## Sample Output
+
+```
+V9360 UART Waveform Capture
+Capturing waveform...
+Capture successful! 309 words
+
+Waveform Data (309 samples):
+Sample 0000: [0x1234,0x5678]
+Sample 0001: [0xABCD,0xEF01]
+...
+```
+
+## Visualization
+
+A test signal was applied to the UP/UN inputs:
 
 ![Wavegen](img/wave_gen_001.png)
 
-Using a small python script, and the captured data we can reconstruct the waveform
+Using the Python helper script, captured data is reconstructed:
 
 ![Wavegen](img/V93XX_buffer.png)
 
-See the Python helper script in tools/plot_v9360_waveform.py for plotting and FFT analysis of captured data.
+**Plot your own data:**
+```bash
+python tools/plot_v9360_waveform.py
+```
+
+The script performs:
+- Time-domain waveform plotting
+- FFT analysis with frequency spectrum
+- Peak detection
 
 ## Performance
 
-Capturing and exporting the waveform buffer over a 19200bps UART link isn't particularly fast.
-The Configuration and internal capture takes about 150ms, and downloading the entire buffer 795ms.
-This is even making use of the V93XX's bulk read features.
+UART capture timing at 19200 baud:
+- **Configuration + DSP Capture**: ~150ms
+- **Data Download (309 words)**: ~795ms
+- **Total**: ~945ms per capture cycle
+
+Using V93XX block read features for efficiency:
 
 ![Wavegen](img/V93XX_saleae.png)
+
+## API Usage
+
+This example demonstrates the `CaptureWaveform()` API:
+
+```cpp
+const uint32_t ctrl5 = (1 << 18) | (2 << 9) | (0 << 6);
+uint32_t waveform[512];
+
+if (v9360.CaptureWaveform(waveform, 512, ctrl5)) {
+    // Process samples...
+}
+```
+
+For on-board FFT analysis, see [V9360_UART_FFT](../V9360_UART_FFT/).

@@ -215,6 +215,61 @@ for (int i = 0; i < 8; i++) {
 
 ---
 
+### Method: CaptureWaveform()
+
+**Capture waveform buffer from V93XX DSP**
+
+```cpp
+bool CaptureWaveform(uint32_t *buffer, size_t word_count, uint32_t ctrl5,
+                     uint32_t timeout_ms = 1000, uint8_t block_words = 16);
+```
+
+**Parameters**:
+- `buffer` - Pointer to uint32_t array for waveform data
+- `word_count` - Maximum number of 32-bit words to read
+- `ctrl5` - DSP_CTRL5 configuration (channel, trigger, length)
+- `timeout_ms` - Capture timeout in milliseconds (default: 1000ms)
+- `block_words` - Words per block read transaction (default: 16, reduce for reliability)
+
+**Returns**:
+- `true` if capture succeeded without overflow
+- `false` if capture failed or timed out
+
+**Behavior**:
+1. Clears interrupt status (SYS_INTSTS)
+2. Writes DSP_CTRL5 configuration
+3. Issues manual trigger (sets bit 18)
+4. Polls for WAVESTORE interrupt (bit 20)
+5. Clamps read count to actual WAVESTORE_CNT (prevents overflow)
+6. Reads waveform data with inter-frame delay for reliability
+7. Returns capture status
+
+**Example**:
+```cpp
+// Configure for 512-sample capture, Channel A voltage, manual trigger
+const uint32_t ctrl5 = (1 << 18) |  // Manual trigger
+                       (2 << 9) |   // Wave length: 512 samples
+                       (0 << 6);    // Channel: UA (voltage A)
+
+uint32_t waveform[512];
+
+// Capture waveform with 2000ms timeout, 4-word block reads
+if (v9381.CaptureWaveform(waveform, 512, ctrl5, 2000, 4)) {
+    Serial.println("Capture successful!");
+    // Process waveform data...
+} else {
+    Serial.println("Capture failed or timed out");
+}
+```
+
+**Notes**:
+- Lower `block_words` (e.g., 4) improves reliability at 19200 baud
+- Higher `timeout_ms` (e.g., 2000) recommended for large captures
+- Uses Dirty mode for capture robustness (CRC mismatches tolerated)
+- Automatically clamps to WAVESTORE_CNT to prevent buffer overflow
+
+---
+
 ## 🎯 Mode Behavior Matrix
 
 | Operation | Dirty Mode | Clean Mode |

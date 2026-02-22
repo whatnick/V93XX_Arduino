@@ -42,6 +42,36 @@ void loop() {
 }
 ```
 
+## 🌊 Waveform Capture Example
+
+Capture and analyze waveform data:
+
+```cpp
+#include "V93XX_UART.h"
+
+V93XX_UART v9381;
+uint32_t waveform[512];
+
+void setup() {
+  Serial.begin(115200);
+  v9381.Init();  // Dirty mode for capture robustness
+}
+
+void loop() {
+  // Configure: 512 samples, Channel A voltage, manual trigger
+  uint32_t ctrl5 = (1 << 18) | (2 << 9) | (0 << 6);
+  
+  if (v9381.CaptureWaveform(waveform, 512, ctrl5, 2000, 4)) {
+    Serial.println("Waveform captured!");
+    // Print first 10 samples
+    for (int i = 0; i < 10; i++) {
+      Serial.printf("Sample %d: 0x%08X\n", i, waveform[i]);
+    }
+  }
+  delay(2000);
+}
+```
+
 ## 🔗 Hardware Wiring (ESP32-S3 DevKitC Defaults)
 
 These are the pin defaults used by the examples. You can remap pins in your sketch if needed.
