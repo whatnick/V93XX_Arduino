@@ -42,13 +42,86 @@ void loop() {
 }
 ```
 
-## 🔗 Hardware Wiring
+## 🔗 Hardware Wiring (ESP32-S3 DevKitC Defaults)
 
+These are the pin defaults used by the examples. You can remap pins in your sketch if needed.
+
+### V9360 (UART)
+
+```mermaid
+flowchart LR
+  subgraph ESP32[ESP32-S3 DevKitC]
+    TX16[GPIO16 (TX)]
+    RX15[GPIO15 (RX)]
+    V3[3V3]
+    GND1[GND]
+  end
+  subgraph V9360[V9360 (UART)]
+    RX[UART RX]
+    TX[UART TX]
+    VDD[VDD (3.3V)]
+    GND2[GND]
+  end
+  TX16 --> RX
+  RX15 --> TX
+  V3 --> VDD
+  GND1 --> GND2
 ```
-ESP32-S3 Pin    →    V9381 Pin
-GPIO1 (TX)      →    UART RX
-GPIO2 (RX)      ←    UART TX
-GND             →    GND
+
+### V9381 (UART)
+
+```mermaid
+flowchart LR
+  subgraph ESP32[ESP32-S3 DevKitC]
+    TX11[GPIO11 (MOSI/TX)]
+    RX13[GPIO13 (MISO/RX)]
+    A0[GPIO12 (SCK/A0)]
+    A1[GPIO10 (CS/A1)]
+    V3[3V3]
+    GND1[GND]
+  end
+  subgraph V9381[V9381 (UART)]
+    RX[UART RX / MOSI]
+    TX[UART TX / MISO]
+    A0P[A0 / SCK]
+    A1P[A1 / CS]
+    VDD[VDD (3.3V)]
+    GND2[GND]
+  end
+  TX11 --> RX
+  RX13 --> TX
+  A0 --> A0P
+  A1 --> A1P
+  V3 --> VDD
+  GND1 --> GND2
+```
+
+### V9381 (SPI)
+
+```mermaid
+flowchart LR
+  subgraph ESP32[ESP32-S3 DevKitC]
+    MOSI[GPIO11 (MOSI)]
+    MISO[GPIO13 (MISO)]
+    SCK[GPIO12 (SCK)]
+    CS[GPIO10 (CS)]
+    V3[3V3]
+    GND1[GND]
+  end
+  subgraph V9381[V9381 (SPI)]
+    MOSI2[MOSI]
+    MISO2[MISO]
+    SCK2[SCK]
+    CS2[CS]
+    VDD[VDD (3.3V)]
+    GND2[GND]
+  end
+  MOSI --> MOSI2
+  MISO --> MISO2
+  SCK --> SCK2
+  CS --> CS2
+  V3 --> VDD
+  GND1 --> GND2
 ```
 
 ## ▶️ Upload & Monitor
