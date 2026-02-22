@@ -8,6 +8,11 @@
 
 class V93XX_Raccoon {
   public:
+    enum class ChecksumMode : uint8_t {
+        Dirty = 0,
+        Clean = 1,
+    };
+
     __attribute__((packed)) struct ControlRegisters {
         union {
             uint32_t _array[8];
@@ -56,7 +61,7 @@ class V93XX_Raccoon {
 
     V93XX_Raccoon(int rx_pin, int tx_pin, HardwareSerial &serial, int device_address);
     void RxReset();
-    void Init(SerialConfig config = SerialConfig::SERIAL_8O1);
+    void Init(SerialConfig config = SerialConfig::SERIAL_8O1, ChecksumMode checksum_mode = ChecksumMode::Dirty);
 
     void RegisterWrite(uint8_t address, uint32_t data);
     uint32_t RegisterRead(uint8_t address);
@@ -66,11 +71,14 @@ class V93XX_Raccoon {
 
     void LoadConfiguration(const ControlRegisters &ctrl, const CalibrationRegisters &calibrations);
 
+    void SetChecksumMode(ChecksumMode mode);
+
   private:
     HardwareSerial &serial;
     int device_address;
     int tx_pin;
     int rx_pin;
+    ChecksumMode checksum_mode = ChecksumMode::Dirty;
 
     std::queue<uint8_t, std::list<uint8_t>> serial_rx_buffer{std::queue<uint8_t, std::list<uint8_t>>()};
 

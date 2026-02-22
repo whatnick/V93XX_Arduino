@@ -62,7 +62,8 @@ void V93XX_Raccoon::RxReset() {
     delayMicroseconds(2150);
 }
 
-void V93XX_Raccoon::Init(SerialConfig config) {
+void V93XX_Raccoon::Init(SerialConfig config, ChecksumMode checksum_mode) {
+    this->checksum_mode = checksum_mode;
 
     pinMode(this->rx_pin, INPUT_PULLUP);
     this->serial.begin(19200, config, this->rx_pin, this->tx_pin);
@@ -154,11 +155,17 @@ void V93XX_Raccoon::RegisterWrite(uint8_t address, uint32_t data) {
     // Read response
     uint8_t checksum_response = this->RxBufferPop();
 
-    // TODO:: Proper error handling
+    // Check and report CRC
     bool checksum_valid = checksum_response == checksum;
-    if (!checksum_valid) {
-        Serial.printf("RegisterWrite(): Checksum invalid (expected: h%02X, received: h%02X)\n", checksum,
-                      checksum_response);
+    Serial.printf("RegisterWrite(0x%02X): CRC expected=0x%02X received=0x%02X %s",
+                  address, checksum, checksum_response, checksum_valid ? "✓" : "✗");
+
+    if (!checksum_valid && this->checksum_mode == ChecksumMode::Clean) {
+        Serial.println(" - ERROR: CRC mismatch! (Clean mode)");
+    } else if (!checksum_valid && this->checksum_mode == ChecksumMode::Dirty) {
+        Serial.println(" - WARNING: CRC mismatch! (Dirty mode - proceeding)");
+    } else {
+        Serial.println();
     }
 }
 
@@ -208,12 +215,19 @@ uint32_t V93XX_Raccoon::RegisterRead(uint8_t address) {
     uint8_t checksum_response = this->RxBufferPop();
 
     // Debug output
-    Serial.printf("RegisterRead(0x%02X): marker=0x%02X data=[0x%02X 0x%02X 0x%02X 0x%02X] calc=0x%02X recv=0x%02X",
-                  address, marker, response[0], response[1], response[2], response[3], checksum, checksum_response);
-
-    // Validate checksum
     bool checksum_valid = checksum == checksum_response;
-    Serial.printf(" %s\n", checksum_valid ? "✓" : "✗");
+    Serial.printf("RegisterRead(0x%02X): marker=0x%02X data=[0x%02X 0x%02X 0x%02X 0x%02X] CRC expected=0x%02X received=0x%02X %s",
+                  address, marker, response[0], response[1], response[2], response[3], checksum, checksum_response,
+                  checksum_valid ? "✓" : "✗");
+
+    if (!checksum_valid && this->checksum_mode == ChecksumMode::Clean) {
+        Serial.println(" - ERROR: CRC mismatch! (Clean mode)");
+    } else if (!checksum_valid && this->checksum_mode == ChecksumMode::Dirty) {
+        Serial.println(" - WARNING: CRC mismatch! (Dirty mode - returning data)");
+    } else {
+        Serial.println();
+    }
+
     return result;
 }
 
@@ -273,9 +287,16 @@ void V93XX_Raccoon::RegisterBlockRead(uint32_t (&values)[], uint8_t num_values) 
     // Validate checksum
     uint8_t response_checksum = this->RxBufferPop();
     bool checksum_valid = checksum == response_checksum;
-    if (!checksum_valid) {
-        Serial.printf("RegisterBlockRead(): Checksum invalid (expected: 0x%02X, received: 0x%02X)\n", checksum,
-                      response_checksum);
+
+    Serial.printf("RegisterBlockRead(%d values): CRC expected=0x%02X received=0x%02X %s",
+                  num_values, checksum, response_checksum, checksum_valid ? "✓" : "✗");
+
+    if (!checksum_valid && this->checksum_mode == ChecksumMode::Clean) {
+        Serial.println(" - ERROR: CRC mismatch! (Clean mode)");
+    } else if (!checksum_valid && this->checksum_mode == ChecksumMode::Dirty) {
+        Serial.println(" - WARNING: CRC mismatch! (Dirty mode - data captured)");
+    } else {
+        Serial.println();
     }
 }
 
@@ -301,4 +322,13 @@ void V93XX_Raccoon::LoadConfiguration(const V93XX_Raccoon::ControlRegisters &ctr
     // Calculate DSP_CFG_CKSUM (0x28) to ensure this is the case
     checksum = 0xFFFFFFFF - checksum;
     this->RegisterWrite(DSP_CFG_CKSUM, checksum);
+}
+
+void V93XX_Raccoon::SetChecksumMode(ChecksumMode mode) {
+    this->checksum_mode = mode;
+    if (mode == ChecksumMode::Dirty) {
+        Serial.println("Checksum Mode: Dirty (skip CRC validation, show expected vs received)");
+    } else {
+        Serial.println("Checksum Mode: Clean (enforce CRC validation)");
+    }
 }

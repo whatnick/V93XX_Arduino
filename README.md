@@ -1,6 +1,24 @@
-# V93XX Umbrella repository
+# V93XX Umbrella Repository
 
-This repository is a collection of Arduino libraries implementing communication protocols for the Vangotech [V93XX](https://www.vangotech.com/en/uploadpic/169329776853.pdf) series of ASIC for Single-phase energy monitoring.
+Collection of Arduino libraries implementing communication protocols for the Vangotech [V93XX](https://www.vangotech.com/en/uploadpic/169329776853.pdf) series of ASICs for single-phase energy monitoring.
+
+## 📚 Documentation
+
+All documentation has been consolidated in the **[docs/](docs/)** folder for easier navigation:
+
+- **[docs/README.md](docs/README.md)** - Documentation index and navigation hub
+- **[docs/GETTING_STARTED.md](docs/GETTING_STARTED.md)** - Quick start guide (5 minutes)
+- **[docs/TESTING.md](docs/TESTING.md)** - Complete testing framework
+- **[docs/INTEGRATION.md](docs/INTEGRATION.md)** - Integration guide for your projects
+- **[docs/API_REFERENCE.md](docs/API_REFERENCE.md)** - Complete API documentation
+- **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)** - Design patterns and architecture
+- **[docs/UART_CHECKSUM_MODE.md](docs/UART_CHECKSUM_MODE.md)** - ChecksumMode feature details
+- **[docs/COPILOT.md](docs/COPILOT.md)** - GitHub Copilot integration
+- **[docs/STATUS.md](docs/STATUS.md)** - Implementation status and production readiness
+
+👉 **[Start here](docs/README.md)** if you're new to this library!
+
+---
 
 ## Supported Communication Protocols
 
