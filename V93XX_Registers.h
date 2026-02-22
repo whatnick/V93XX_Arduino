@@ -9,9 +9,9 @@
 // Inter-frame timing calculation based on baud rate
 // Formula: (5 bytes * 11 bits/byte / baud_rate) + 4ms safety margin
 // At 19200: ~6.9ms, at 115200: ~4.5ms, at 9600: ~9.7ms
-// 
+//
 // Configurable: Change V93XX_UART_BAUD_RATE to adapt delay for different speeds
-#define V93XX_UART_BAUD_RATE 19200
+#define V93XX_UART_BAUD_RATE      19200
 #define V93XX_INTERFRAME_DELAY_MS ((55 * 1000) / V93XX_UART_BAUD_RATE + 4)
 
 // ============================================================================

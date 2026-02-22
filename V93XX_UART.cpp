@@ -157,8 +157,8 @@ void V93XX_UART::RegisterWrite(uint8_t address, uint32_t data) {
 
     // Check and report CRC
     bool checksum_valid = checksum_response == checksum;
-    Serial.printf("RegisterWrite(0x%02X): CRC expected=0x%02X received=0x%02X %s",
-                  address, checksum, checksum_response, checksum_valid ? "✓" : "✗");
+    Serial.printf("RegisterWrite(0x%02X): CRC expected=0x%02X received=0x%02X %s", address, checksum, checksum_response,
+                  checksum_valid ? "✓" : "✗");
 
     if (!checksum_valid && this->checksum_mode == ChecksumMode::Clean) {
         Serial.println(" - ERROR: CRC mismatch! (Clean mode)");
@@ -199,10 +199,10 @@ uint32_t V93XX_UART::RegisterRead(uint8_t address) {
     }
 
     // Read response: marker + 4 data bytes + 1 checksum byte
-    uint8_t marker = this->RxBufferPop();  // Skip marker byte (0x7D)
+    uint8_t marker = this->RxBufferPop(); // Skip marker byte (0x7D)
     uint8_t response[4];
     // Per datasheet: CKSUM = 0x33 + ~(CMD1 + CMD2 + sum of all data bytes)
-    uint8_t checksum = request[1] + request[2];  // Start with CMD1 + CMD2
+    uint8_t checksum = request[1] + request[2]; // Start with CMD1 + CMD2
     uint32_t result = 0;
     for (int i = 0; i < 4; i++) {
         uint8_t data = this->RxBufferPop();
@@ -216,9 +216,10 @@ uint32_t V93XX_UART::RegisterRead(uint8_t address) {
 
     // Debug output
     bool checksum_valid = checksum == checksum_response;
-    Serial.printf("RegisterRead(0x%02X): marker=0x%02X data=[0x%02X 0x%02X 0x%02X 0x%02X] CRC expected=0x%02X received=0x%02X %s",
-                  address, marker, response[0], response[1], response[2], response[3], checksum, checksum_response,
-                  checksum_valid ? "✓" : "✗");
+    Serial.printf(
+        "RegisterRead(0x%02X): marker=0x%02X data=[0x%02X 0x%02X 0x%02X 0x%02X] CRC expected=0x%02X received=0x%02X %s",
+        address, marker, response[0], response[1], response[2], response[3], checksum, checksum_response,
+        checksum_valid ? "✓" : "✗");
 
     if (!checksum_valid && this->checksum_mode == ChecksumMode::Clean) {
         Serial.println(" - ERROR: CRC mismatch! (Clean mode)");
@@ -271,9 +272,9 @@ void V93XX_UART::RegisterBlockRead(uint32_t (&values)[], uint8_t num_values) {
 
     // Read response: for each value, skip marker then read 4 data bytes, then final checksum
     // Per datasheet: CKSUM = 0x33 + ~(CMD1 + CMD2 + sum of all data bytes)
-    uint8_t checksum = request[1] + request[2];  // Start with CMD1 + CMD2
+    uint8_t checksum = request[1] + request[2]; // Start with CMD1 + CMD2
     for (int i = 0; i < num_values; i++) {
-        uint8_t marker = this->RxBufferPop();  // Skip marker byte
+        uint8_t marker = this->RxBufferPop(); // Skip marker byte
         uint8_t response[4];
         for (int j = 0; j < 4; j++) {
             response[j] = this->RxBufferPop();
@@ -288,8 +289,8 @@ void V93XX_UART::RegisterBlockRead(uint32_t (&values)[], uint8_t num_values) {
     uint8_t response_checksum = this->RxBufferPop();
     bool checksum_valid = checksum == response_checksum;
 
-    Serial.printf("RegisterBlockRead(%d values): CRC expected=0x%02X received=0x%02X %s",
-                  num_values, checksum, response_checksum, checksum_valid ? "✓" : "✗");
+    Serial.printf("RegisterBlockRead(%d values): CRC expected=0x%02X received=0x%02X %s", num_values, checksum,
+                  response_checksum, checksum_valid ? "✓" : "✗");
 
     if (!checksum_valid && this->checksum_mode == ChecksumMode::Clean) {
         Serial.println(" - ERROR: CRC mismatch! (Clean mode)");

@@ -23,13 +23,13 @@ V93XX_UART v9381(V93XX_UART_RX_PIN, V93XX_UART_TX_PIN, Serial1, V93XX_DEVICE_ADD
 void setup() {
     Serial.begin(115200);
     delay(1000);
-    
+
     Serial.println("\n\n=== V9381 UART Checksum Mode CRC Debugging Example ===\n");
-    
+
     // Initialize UART in Dirty mode (skip CRC validation)
     v9381.RxReset();
     v9381.Init(SerialConfig::SERIAL_8O1, V93XX_UART::ChecksumMode::Dirty);
-    
+
     delay(500);
 }
 
@@ -37,24 +37,24 @@ void loop() {
     Serial.println("\n--- Test Cycle ---");
     Serial.println("[1] Testing with CHECKSUM MODE: Clean (enforce CRC validation)");
     TestWithCleanMode();
-    
+
     delay(2000);
-    
+
     Serial.println("\n[2] Testing with CHECKSUM MODE: Dirty (skip CRC validation)");
     TestWithDirtyMode();
-    
+
     delay(5000);
 }
 
 void TestWithCleanMode() {
     // Set to Clean mode - will enforce CRC validation
     v9381.SetChecksumMode(V93XX_UART::ChecksumMode::Clean);
-    
+
     Serial.println("\nReading SYS_VERSION register 3 times:");
     for (int i = 0; i < 3; i++) {
         uint32_t version = v9381.RegisterRead(SYS_VERSION);
         Serial.printf("  Attempt %d: 0x%08X\n", i + 1, version);
-        
+
         // Per V9381 datasheet: minimum 2ms inter-frame delay (t_TRD)
         // Delay auto-calculated from baud rate for optimal speed & safety
         delay(V93XX_INTERFRAME_DELAY_MS);
@@ -64,23 +64,23 @@ void TestWithCleanMode() {
 void TestWithDirtyMode() {
     // Set to Dirty mode - will skip CRC validation
     v9381.SetChecksumMode(V93XX_UART::ChecksumMode::Dirty);
-    
+
     Serial.println("\nReading SYS_VERSION register 3 times:");
     for (int i = 0; i < 3; i++) {
         uint32_t version = v9381.RegisterRead(SYS_VERSION);
         Serial.printf("  Attempt %d: 0x%08X\n", i + 1, version);
-        
+
         // Per V9381 datasheet: minimum 2ms inter-frame delay (t_TRD)
         // Delay auto-calculated from baud rate for optimal speed & safety
         delay(V93XX_INTERFRAME_DELAY_MS);
     }
-    
+
     Serial.println("\nReading multiple registers:");
     Serial.printf("  SYS_INTSTS = 0x%08X\n", v9381.RegisterRead(SYS_INTSTS));
-    delay(V93XX_INTERFRAME_DELAY_MS);   // t_TRD inter-frame delay
+    delay(V93XX_INTERFRAME_DELAY_MS); // t_TRD inter-frame delay
     Serial.printf("  SYS_ROMCS = 0x%08X\n", v9381.RegisterRead(SYS_ROMCS));
-    delay(V93XX_INTERFRAME_DELAY_MS);   // t_TRD inter-frame delay
-    
+    delay(V93XX_INTERFRAME_DELAY_MS); // t_TRD inter-frame delay
+
     // Return to Clean mode for normal operation
     v9381.SetChecksumMode(V93XX_UART::ChecksumMode::Clean);
     Serial.println("\nReturned to Clean mode - normal operation");

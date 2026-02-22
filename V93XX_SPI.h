@@ -74,7 +74,7 @@ class V93XX_SPI {
      * @brief Constructor for V9381 SPI driver
      * @param cs_pin Chip select pin number
      * @param spi_bus Reference to SPI bus (default SPIClass)
-    * @param spi_freq SPI clock frequency in Hz (default 400kHz)
+     * @param spi_freq SPI clock frequency in Hz (default 400kHz)
      */
     V93XX_SPI(int cs_pin, SPIClass &spi_bus = SPI, uint32_t spi_freq = 400000);
 
@@ -97,7 +97,6 @@ class V93XX_SPI {
               int8_t miso_pin, int8_t mosi_pin);
 
     void SetChecksumMode(ChecksumMode mode);
-
 
     /**
      * @brief Perform the SPI interface initialization sequence (write magic to 0x7F).
