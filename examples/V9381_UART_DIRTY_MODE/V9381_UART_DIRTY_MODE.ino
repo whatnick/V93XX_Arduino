@@ -3,6 +3,9 @@
 // V9381 UART Dirty Mode Example
 // This example demonstrates how to use dirty mode for CRC debugging
 // Dirty mode skips CRC validation and shows expected vs received CRC
+//
+// Inter-frame timing: Configured in V93XX_Registers.h
+// Change V93XX_UART_BAUD_RATE macro to optimize for different speeds
 
 #if defined(ARDUINO_ARCH_ESP32)
 // ESP32-S3 reference (FluidNC wiki): SPI2/VSPI default (IOMUX) pins
@@ -51,6 +54,10 @@ void TestWithCleanMode() {
     for (int i = 0; i < 3; i++) {
         uint32_t version = v9381.RegisterRead(SYS_VERSION);
         Serial.printf("  Attempt %d: 0x%08X\n", i + 1, version);
+        
+        // Per V9381 datasheet: minimum 2ms inter-frame delay (t_TRD)
+        // Delay auto-calculated from baud rate for optimal speed & safety
+        delay(V93XX_INTERFRAME_DELAY_MS);
     }
 }
 
@@ -62,11 +69,17 @@ void TestWithDirtyMode() {
     for (int i = 0; i < 3; i++) {
         uint32_t version = v9381.RegisterRead(SYS_VERSION);
         Serial.printf("  Attempt %d: 0x%08X\n", i + 1, version);
+        
+        // Per V9381 datasheet: minimum 2ms inter-frame delay (t_TRD)
+        // Delay auto-calculated from baud rate for optimal speed & safety
+        delay(V93XX_INTERFRAME_DELAY_MS);
     }
     
     Serial.println("\nReading multiple registers:");
     Serial.printf("  SYS_INTSTS = 0x%08X\n", v9381.RegisterRead(SYS_INTSTS));
+    delay(V93XX_INTERFRAME_DELAY_MS);   // t_TRD inter-frame delay
     Serial.printf("  SYS_ROMCS = 0x%08X\n", v9381.RegisterRead(SYS_ROMCS));
+    delay(V93XX_INTERFRAME_DELAY_MS);   // t_TRD inter-frame delay
     
     // Return to Clean mode for normal operation
     v9381.SetChecksumMode(V93XX_UART::ChecksumMode::Clean);

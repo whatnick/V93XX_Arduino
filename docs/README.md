@@ -89,7 +89,7 @@ examples/
 ### For Code
 - UART driver: `V93XX_UART.h` / `V93XX_UART.cpp`
 - SPI driver: `V93XX_SPI.h` / `V93XX_SPI.cpp`
-- Register definitions: `V93XX_UART_registers.h`
+- Register definitions & UART timing macros: `V93XX_Registers.h` (protocol-independent)
 
 ---
 

@@ -196,7 +196,7 @@ class SetupVerifier:
         driver_files = [
             "V93XX_UART.h",
             "V93XX_UART.cpp",
-            "V93XX_UART_registers.h"
+            "V93XX_Registers.h"
         ]
         
         for f in driver_files:

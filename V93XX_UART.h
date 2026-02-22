@@ -1,7 +1,7 @@
 #ifndef V93XX_UART_H__
 #define V93XX_UART_H__
 
-#include "V93XX_UART_registers.h"
+#include "V93XX_Registers.h"
 #include <Arduino.h>
 #include <list>
 #include <queue>
