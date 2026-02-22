@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
 """
-Setup verification for V9381 UART debugging environment.
+Setup verification for V9381 UART/SPI debugging environment.
 Checks all prerequisites and provides configuration guidance.
 
 Usage:
     python verify_setup.py
-    python verify_setup.py --fix  # Attempt auto-fixes
 """
 
 import subprocess
@@ -82,8 +81,8 @@ class SetupVerifier:
         
         # Package checks
         packages = [
-            ("pyserial", "pyserial"),
-            ("logic2_automation", "logic2-automation"),
+            ("serial", "pyserial"),
+            ("saleae", "saleae"),
         ]
         
         for import_name, package_name in packages:
@@ -209,10 +208,11 @@ class SetupVerifier:
         
         # Check tools
         tool_files = [
-            "tools/orchestrate_debug.py",
-            "tools/automated_uart_debug.py",
-            "tools/uart_diagnostics.py",
-            "tools/logic2_automation.py"
+            "tools/capture_v9381_uart.py",
+            "tools/capture_v9381_spi.py",
+            "tools/analyze_spi_csv.py",
+            "tools/plot_v9360_waveform.py",
+            "tools/verify_setup.py"
         ]
         
         for f in tool_files:
@@ -274,11 +274,11 @@ class SetupVerifier:
             if self.checks_warnings == 0:
                 print(f"{Colors.GREEN}{Colors.BOLD}✓ All checks passed! Ready to debug.{Colors.END}")
                 print(f"\nQuick start:")
-                print(f"  python tools/orchestrate_debug.py")
+                print(f"  python tools/capture_v9381_uart.py")
             else:
                 print(f"{Colors.YELLOW}{Colors.BOLD}⚠ Some optional features unavailable.{Colors.END}")
                 print(f"\nYou can still debug with:")
-                print(f"  python tools/uart_diagnostics.py 60")
+                print(f"  python tools/capture_v9381_uart.py")
         else:
             print(f"{Colors.RED}{Colors.BOLD}✗ Setup incomplete. Address failures above.{Colors.END}")
             print(f"\nTo fix issues:")
